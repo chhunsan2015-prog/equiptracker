@@ -21,7 +21,6 @@ import {
 import ReportGrid from './components/ReportGrid.tsx';
 import DashboardStats from './components/DashboardStats.tsx';
 import StaffSettings from './components/StaffSettings.tsx';
-import GoogleSheetsSync from './components/GoogleSheetsSync.tsx';
 import ReportFormModal from './components/ReportFormModal.tsx';
 
 import {
@@ -42,7 +41,7 @@ import {
 
 export default function App() {
   // Navigation & Filter States
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'matrix' | 'staff' | 'sync'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'matrix' | 'staff'>('dashboard');
   const [filterType, setFilterType] = useState<'all' | 'province' | 'khan'>('all');
 
   // Time States (Defaults to Today's Year-Month-Day)
@@ -461,17 +460,6 @@ export default function App() {
               <Users className="w-4 h-4" />
               សមាជិកប្រចាំការ
             </button>
-            <button
-              onClick={() => setActiveTab('sync')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'sync'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/50'
-              }`}
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              Google Sheet Sync
-            </button>
           </div>
 
           {/* Sync status indicator */}
@@ -605,19 +593,6 @@ export default function App() {
               onSaveStaff={handleSaveStaffAssignments}
               isSyncing={connectionState.isLoading}
               isSheetsConnected={!!connectionState.spreadsheetId}
-            />
-          )}
-
-          {activeTab === 'sync' && (
-            <GoogleSheetsSync
-              connectionState={connectionState}
-              accessToken={accessToken}
-              onConnect={handleConnectSpreadsheet}
-              onCreateNewSheet={handleCreateNewSpreadsheet}
-              onPullData={handlePullData}
-              onPushData={handlePushData}
-              onLoginWithGoogle={handleLoginWithGoogle}
-              onClearSession={handleClearSession}
             />
           )}
 
