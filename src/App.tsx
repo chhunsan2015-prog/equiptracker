@@ -22,6 +22,7 @@ import ReportGrid from './components/ReportGrid.tsx';
 import DashboardStats from './components/DashboardStats.tsx';
 import StaffSettings from './components/StaffSettings.tsx';
 import ReportFormModal from './components/ReportFormModal.tsx';
+import logoImg from './Logo5.png';
 
 import {
   LayoutDashboard,
@@ -379,7 +380,7 @@ export default function App() {
             {/* Cambodian GDT Styling Shield Emblem */}
             <div className="w-11 h-11 bg-[#b7945d]/10 rounded-xl flex items-center justify-center shadow-lg border border-amber-300/50 flex-shrink-0">
               <img 
-                src="/Logo5.png" 
+                src={logoImg} 
                 alt="Logo" 
                 className="w-9 h-9 object-contain"
                 referrerPolicy="no-referrer"
