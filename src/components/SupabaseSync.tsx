@@ -325,23 +325,10 @@ export default function SupabaseSync({ localReports, localStaff, onDataSync }: S
                     ពិនិត្យការតភ្ជាប់
                   </button>
 
-                  <button
-                    onClick={handlePullData}
-                    disabled={!!syncingType}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
-                  >
-                    <ArrowDownLeft className="w-4 h-4" />
-                    ទាញយកទិន្នន័យ (PULL)
-                  </button>
-
-                  <button
-                    onClick={handlePushData}
-                    disabled={!!syncingType}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
-                  >
-                    <ArrowUpRight className="w-4 h-4" />
-                    បញ្ជូនទិន្នន័យ (PUSH)
-                  </button>
+                  <div className="flex items-center gap-1.5 px-3 py-2 bg-teal-50 border border-teal-200 text-teal-800 rounded-lg text-xs font-bold shadow-sm">
+                    <CheckCircle className="w-4 h-4 text-teal-500" />
+                    ប្រព័ន្ធដំណើរការ Online & សមកាលកម្មស្វ័យប្រវត្ត (Auto-Sync)
+                  </div>
                 </>
               )}
             </div>

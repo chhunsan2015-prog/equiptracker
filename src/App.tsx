@@ -24,7 +24,7 @@ import StaffSettings from './components/StaffSettings.tsx';
 import SupabaseSync from './components/SupabaseSync.tsx';
 import ReportFormModal from './components/ReportFormModal.tsx';
 import logoImg from './Logo5.png';
-import { getSupabaseConfig, pushStaffToSupabase, pushReportsToSupabase } from './utils/supabaseClient.ts';
+import { getSupabaseConfig, pushStaffToSupabase, pushReportsToSupabase, getSupabaseClient } from './utils/supabaseClient.ts';
 
 import {
   LayoutDashboard,
@@ -40,6 +40,9 @@ import {
   HelpCircle,
   AlertCircle,
   TrendingUp,
+  CheckCircle,
+  XCircle,
+  X,
 } from 'lucide-react';
 
 export default function App() {
@@ -70,6 +73,12 @@ export default function App() {
     error: null,
   });
 
+  // Supabase Notification State
+  const [syncNotification, setSyncNotification] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
+
   // Load initial dates on mount
   useEffect(() => {
     const today = new Date();
@@ -80,10 +89,13 @@ export default function App() {
     setSelectedDate(`${yr}-${mo}-${day}`);
   }, []);
 
-  // Initialize data from LocalStorage
+  // Initialize data from LocalStorage and background-sync with Supabase
   useEffect(() => {
-    setReports(getLocalReports());
-    setStaff(getLocalStaff());
+    // 1. Load local state immediately for instant paint
+    const localReps = getLocalReports();
+    const localStf = getLocalStaff();
+    setReports(localReps);
+    setStaff(localStf);
 
     const savedSheetId = localStorage.getItem('tax_tracker_spreadsheet_id');
     const savedSheetUrl = localStorage.getItem('tax_tracker_spreadsheet_url');
@@ -101,6 +113,36 @@ export default function App() {
 
     if (savedToken) {
       setAccessToken(savedToken);
+    }
+
+    // 2. Automatic background sync from Supabase if configured
+    const activeConfig = getSupabaseConfig();
+    if (activeConfig.isConfigured) {
+      const autoFetchData = async () => {
+        try {
+          const { fetchReportsFromSupabase, fetchStaffFromSupabase } = await import('./utils/supabaseClient.ts');
+          const fetchedStaff = await fetchStaffFromSupabase();
+          const fetchedReports = await fetchReportsFromSupabase();
+          
+          setReports(fetchedReports);
+          saveLocalReports(fetchedReports);
+          setStaff(fetchedStaff);
+          saveLocalStaff(fetchedStaff);
+          
+          setSyncNotification({
+            message: 'ទិន្នន័យត្រូវបានទាញយក និងសមកាលកម្មស្វ័យប្រវត្តិពី Supabase!',
+            type: 'success'
+          });
+          setTimeout(() => setSyncNotification(null), 3500);
+        } catch (err) {
+          console.error('Failed to auto-fetch initial data from Supabase:', err);
+          setSyncNotification({
+            message: 'មិនអាចទាញទិន្នន័យស្វ័យប្រវត្តពី Supabase បានទេ៖ ' + (err instanceof Error ? err.message : String(err)),
+            type: 'error'
+          });
+        }
+      };
+      autoFetchData();
     }
   }, []);
 
@@ -298,6 +340,7 @@ export default function App() {
    * Action: Save Staff assignment (locally and sheets if connected)
    */
   const handleSaveStaffAssignments = async (updatedStaff: StaffAssignment[]) => {
+    // 1. Optimistic Update (update UI state and local storage first to prevent lag)
     setStaff(updatedStaff);
     saveLocalStaff(updatedStaff);
 
@@ -310,14 +353,40 @@ export default function App() {
       }
     }
 
-    // Auto-sync with Supabase if configured
+    // 2. Auto-sync with Supabase using direct query + try/catch + console.error + messages
     try {
       const supabaseConfig = getSupabaseConfig();
       if (supabaseConfig.isConfigured) {
-        await pushStaffToSupabase(updatedStaff);
+        const supabase = getSupabaseClient();
+        if (supabase) {
+          const rows = updatedStaff.map(s => ({
+            branch_id: s.branchId,
+            staff_names: s.staffNames,
+            phone: s.phone || '',
+            updated_at: new Date().toISOString()
+          }));
+
+          const { error } = await supabase
+            .from('staff_assignments')
+            .upsert(rows, { onConflict: 'branch_id' });
+
+          if (error) {
+            throw error;
+          }
+
+          setSyncNotification({
+            message: 'រក្សាទុកព័ត៌មានមន្ត្រីបង្គោលទៅកាន់ Supabase បានជោគជ័យ!',
+            type: 'success'
+          });
+          setTimeout(() => setSyncNotification(null), 3500);
+        }
       }
     } catch (err) {
-      console.warn('Failed to auto-sync staff details with Supabase. Values saved locally.', err);
+      console.error('Failed to auto-sync staff details with Supabase:', err);
+      setSyncNotification({
+        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើព័ត៌មានមន្ត្រីបង្គោលទៅ Supabase៖ ' + (err instanceof Error ? err.message : String(err)),
+        type: 'error'
+      });
     }
   };
 
@@ -330,6 +399,7 @@ export default function App() {
       newReport,
     ];
     
+    // 1. Optimistic Update (update UI state and local storage first to prevent lag)
     setReports(updatedReports);
     saveLocalReports(updatedReports);
 
@@ -342,14 +412,44 @@ export default function App() {
       }
     }
 
-    // Auto-sync with Supabase if configured
+    // 2. Auto-sync with Supabase using direct query + try/catch + console.error + messages
     try {
       const supabaseConfig = getSupabaseConfig();
       if (supabaseConfig.isConfigured) {
-        await pushReportsToSupabase([newReport]);
+        const supabase = getSupabaseClient();
+        if (supabase) {
+          const row = {
+            date: newReport.date,
+            branch_id: newReport.branchId,
+            status: newReport.status,
+            equipment_checked: newReport.equipmentChecked,
+            reporter_name: newReport.reporterName,
+            telegram_post_time: newReport.telegramPostTime,
+            note: newReport.note,
+            logged_at: newReport.loggedAt
+          };
+
+          const { error } = await supabase
+            .from('daily_reports')
+            .upsert([row], { onConflict: 'date,branch_id' });
+
+          if (error) {
+            throw error;
+          }
+
+          setSyncNotification({
+            message: 'បញ្ជូនរបាយការណ៍ប្រចាំថ្ងៃទៅ Supabase បានជោគជ័យ!',
+            type: 'success'
+          });
+          setTimeout(() => setSyncNotification(null), 3500);
+        }
       }
     } catch (err) {
-      console.warn('Failed to auto-sync reports with Supabase. Values saved locally.', err);
+      console.error('Failed to auto-sync reports with Supabase:', err);
+      setSyncNotification({
+        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើរបាយការណ៍ទៅ Supabase៖ ' + (err instanceof Error ? err.message : String(err)),
+        type: 'error'
+      });
     }
   };
 
@@ -526,15 +626,20 @@ export default function App() {
 
             {/* Offline/Online state indicator */}
             <div className="text-xs">
-              {connectionState.spreadsheetId ? (
-                <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  តំណភ្ជាប់សកម្ម
+              {getSupabaseConfig().isConfigured ? (
+                <span className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
+                  តភ្ជាប់ជាមួយ Supabase (Online)
+                </span>
+              ) : connectionState.spreadsheetId ? (
+                <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  តំណភ្ជាប់ Sheets សកម្ម (Online)
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 font-medium text-slate-400">
-                  <div className="w-2 h-2 rounded-full bg-slate-300" />
-                  ដំណើរការក្នុងម៉ាស៊ីន (Offline)
+                <span className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
+                  តភ្ជាប់ស្វ័យប្រវត្ត (Online)
                 </span>
               )}
             </div>
@@ -664,6 +769,31 @@ export default function App() {
       <footer className="bg-slate-100 border-t border-slate-200 text-center py-5 mt-auto text-slate-400 text-xs font-medium">
         <p>© ២០២៦ ប្រព័ន្ធត្រួតពិនិត្យ និងតាមដានឧបករណ៍បច្ចេកវិទ្យាព័ត៌មាន សាខាពន្ធដារខេត្ត-ខណ្ឌ។ រក្សាសិទ្ធិគ្រប់យ៉ាង។</p>
       </footer>
+
+      {/* Floating Supabase Sync Notification Toast */}
+      {syncNotification && (
+        <div className={`fixed bottom-6 right-6 z-50 max-w-sm p-4 rounded-xl shadow-xl border flex items-start gap-3 animate-fade-in ${
+          syncNotification.type === 'success'
+            ? 'bg-teal-50 border-teal-200 text-teal-900'
+            : 'bg-rose-50 border-rose-200 text-rose-900'
+        }`}>
+          {syncNotification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5 animate-bounce" />
+          ) : (
+            <XCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+          )}
+          <div className="flex-1">
+            <h5 className="font-bold text-xs">សេចក្តីជូនដំណឹងពី Supabase</h5>
+            <p className="text-[11px] mt-0.5 leading-relaxed font-medium">{syncNotification.message}</p>
+          </div>
+          <button
+            onClick={() => setSyncNotification(null)}
+            className="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

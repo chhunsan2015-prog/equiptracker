@@ -6,6 +6,7 @@
 import React, { useState, useMemo } from 'react';
 import { Branch, StaffAssignment } from '../types.ts';
 import { Users, Search, Edit2, Check, X, Phone, Save, Database, Shield } from 'lucide-react';
+import { getSupabaseConfig } from '../utils/supabaseClient.ts';
 
 interface StaffSettingsProps {
   branches: Branch[];
@@ -133,15 +134,20 @@ export default function StaffSettings({
 
         {/* Database Badge */}
         <div className="flex items-center gap-1.5 self-start md:self-auto">
-          {isSheetsConnected ? (
+          {getSupabaseConfig().isConfigured ? (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+              <Database className="w-3.5 h-3.5 animate-pulse" />
+              ភ្ជាប់ស្វ័យប្រវត្តជាមួយ Supabase (Online)
+            </span>
+          ) : isSheetsConnected ? (
             <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
               <Database className="w-3.5 h-3.5" />
-              ភ្ជាប់ Google Sheet
+              ភ្ជាប់ Google Sheet (Online)
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-              <Shield className="w-3.5 h-3.5" />
-              រក្សាទុកក្នុងម៉ាស៊ីន (Offline/Local)
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+              <Database className="w-3.5 h-3.5 animate-pulse" />
+              ភ្ជាប់ស្វ័យប្រវត្ត (Online)
             </span>
           )}
         </div>
