@@ -91,6 +91,8 @@ export default function StaffSettings({
     const editedFields = editMap[branchId];
     if (!editedFields) return;
 
+    console.log("🔥 ចាប់ផ្តើមដំណើរការ Save:", editedFields);
+
     setIsSaving(true);
     try {
       const updatedList = staff.map(s => {
@@ -112,7 +114,9 @@ export default function StaffSettings({
       await onSaveStaff(updatedList);
       handleCancelEdit(branchId);
     } catch (err) {
-      alert('កំហុសពេលរក្សាទុក៖ ' + (err instanceof Error ? err.message : String(err)));
+      console.error("កំហុសលម្អិត:", err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      alert('កំហុសពេលរក្សាទុក៖ ' + errMsg);
     } finally {
       setIsSaving(false);
     }
@@ -240,7 +244,13 @@ export default function StaffSettings({
 
                   {/* Input Fields */}
                   {isEditing ? (
-                    <div className="space-y-2.5 mt-2">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSaveSingle(item.branchId);
+                      }}
+                      className="space-y-2.5 mt-2"
+                    >
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">ឈ្មោះបុគ្គលិកប្រចាំការ</label>
                         <input
@@ -249,6 +259,7 @@ export default function StaffSettings({
                           onChange={(e) => handleFieldChange(item.branchId, 'staffNames', e.target.value)}
                           className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="បញ្ចូលឈ្មោះបុគ្គលិក..."
+                          required
                         />
                       </div>
                       <div>
@@ -265,6 +276,7 @@ export default function StaffSettings({
                       {/* Action buttons while editing */}
                       <div className="flex justify-end gap-1.5 pt-2">
                         <button
+                          type="button"
                           onClick={() => handleCancelEdit(item.branchId)}
                           disabled={isSaving}
                           className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs transition cursor-pointer"
@@ -272,7 +284,7 @@ export default function StaffSettings({
                           Cancel
                         </button>
                         <button
-                          onClick={() => handleSaveSingle(item.branchId)}
+                          type="submit"
                           disabled={isSaving || !editedData.staffNames.trim()}
                           className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                         >
@@ -280,7 +292,7 @@ export default function StaffSettings({
                           Save
                         </button>
                       </div>
-                    </div>
+                    </form>
                   ) : (
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center gap-1.5 text-slate-600">
