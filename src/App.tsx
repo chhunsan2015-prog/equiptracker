@@ -380,8 +380,8 @@ export default function App() {
             {/* Cambodian GDT Styling Shield Emblem */}
             <div className="w-11 h-11 bg-[#b7945d]/10 rounded-xl flex items-center justify-center shadow-lg border border-amber-300/50 flex-shrink-0">
               <img 
-                src="/Logo3D.ico" 
-                alt="Logo 3D" 
+                src="/Logo5.png" 
+                alt="Logo" 
                 className="w-9 h-9 object-contain"
                 referrerPolicy="no-referrer"
               />
