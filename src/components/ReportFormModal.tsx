@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Branch, DailyReport, StaffAssignment } from '../types.ts';
 import { EQUIPMENT_LIST } from '../constants.ts';
 import { X, Check, ClipboardList, Info, HelpCircle, CheckSquare, Square, Clock } from 'lucide-react';
+import { formatError } from '../utils/supabaseClient.ts';
 
 interface ReportFormModalProps {
   isOpen: boolean;
@@ -113,7 +114,7 @@ export default function ReportFormModal({
       onClose();
     } catch (err) {
       console.error("កំហុសលម្អិត:", err);
-      const errMsg = err instanceof Error ? err.message : String(err);
+      const errMsg = formatError(err);
       alert('កំហុសពេលបញ្ចូលទិន្នន័យ៖ ' + errMsg);
     } finally {
       setIsSubmitting(false);

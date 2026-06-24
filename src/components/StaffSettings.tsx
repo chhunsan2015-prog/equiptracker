@@ -6,7 +6,7 @@
 import React, { useState, useMemo } from 'react';
 import { Branch, StaffAssignment } from '../types.ts';
 import { Users, Search, Edit2, Check, X, Phone, Save, Database, Shield } from 'lucide-react';
-import { getSupabaseConfig } from '../utils/supabaseClient.ts';
+import { getSupabaseConfig, formatError } from '../utils/supabaseClient.ts';
 
 interface StaffSettingsProps {
   branches: Branch[];
@@ -115,7 +115,7 @@ export default function StaffSettings({
       handleCancelEdit(branchId);
     } catch (err) {
       console.error("កំហុសលម្អិត:", err);
-      const errMsg = err instanceof Error ? err.message : String(err);
+      const errMsg = formatError(err);
       alert('កំហុសពេលរក្សាទុក៖ ' + errMsg);
     } finally {
       setIsSaving(false);

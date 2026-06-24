@@ -245,3 +245,24 @@ export async function pushReportsToSupabase(reportsList: DailyReport[]): Promise
     }
   }
 }
+
+/**
+ * Utility to extract error messages from any kind of error object,
+ * especially Supabase/Postgrest errors which are plain JS objects.
+ */
+export function formatError(err: any): string {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+  if (err.message) return err.message;
+  if (err.error_description) return err.error_description;
+  if (err.details) return `${err.message || 'Error'}: ${err.details}`;
+  if (typeof err === 'object') {
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+  return String(err);
+}
+

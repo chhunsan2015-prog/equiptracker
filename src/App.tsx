@@ -24,7 +24,7 @@ import StaffSettings from './components/StaffSettings.tsx';
 import SupabaseSync from './components/SupabaseSync.tsx';
 import ReportFormModal from './components/ReportFormModal.tsx';
 import logoImg from './Logo5.png';
-import { getSupabaseConfig, pushStaffToSupabase, pushReportsToSupabase, getSupabaseClient } from './utils/supabaseClient.ts';
+import { getSupabaseConfig, pushStaffToSupabase, pushReportsToSupabase, getSupabaseClient, formatError } from './utils/supabaseClient.ts';
 
 import {
   LayoutDashboard,
@@ -137,7 +137,7 @@ export default function App() {
         } catch (err) {
           console.error('Failed to auto-fetch initial data from Supabase:', err);
           setSyncNotification({
-            message: 'មិនអាចទាញទិន្នន័យស្វ័យប្រវត្តពី Supabase បានទេ៖ ' + (err instanceof Error ? err.message : String(err)),
+            message: 'មិនអាចទាញទិន្នន័យស្វ័យប្រវត្តពី Supabase បានទេ៖ ' + formatError(err),
             type: 'error'
           });
         }
@@ -384,7 +384,7 @@ export default function App() {
     } catch (err) {
       console.error('Failed to auto-sync staff details with Supabase:', err);
       setSyncNotification({
-        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើព័ត៌មានមន្ត្រីបង្គោលទៅ Supabase៖ ' + (err instanceof Error ? err.message : String(err)),
+        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើព័ត៌មានមន្ត្រីបង្គោលទៅ Supabase៖ ' + formatError(err),
         type: 'error'
       });
     }
@@ -447,7 +447,7 @@ export default function App() {
     } catch (err) {
       console.error('Failed to auto-sync reports with Supabase:', err);
       setSyncNotification({
-        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើរបាយការណ៍ទៅ Supabase៖ ' + (err instanceof Error ? err.message : String(err)),
+        message: 'បរាជ័យក្នុងការតភ្ជាប់ ឬផ្ញើរបាយការណ៍ទៅ Supabase៖ ' + formatError(err),
         type: 'error'
       });
     }
