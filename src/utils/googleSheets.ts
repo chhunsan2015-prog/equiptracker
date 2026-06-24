@@ -16,7 +16,15 @@ const STORAGE_SHEET_ID_KEY = 'tax_tracker_spreadsheet_id';
  */
 export const getLocalReports = (): DailyReport[] => {
   const data = localStorage.getItem(STORAGE_REPORTS_KEY);
-  return data ? JSON.parse(data) : [];
+  if (data) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      console.error('Failed to parse local reports:', e);
+      return [];
+    }
+  }
+  return [];
 };
 
 export const saveLocalReports = (reports: DailyReport[]) => {

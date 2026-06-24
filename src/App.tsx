@@ -21,8 +21,10 @@ import {
 import ReportGrid from './components/ReportGrid.tsx';
 import DashboardStats from './components/DashboardStats.tsx';
 import StaffSettings from './components/StaffSettings.tsx';
+import SupabaseSync from './components/SupabaseSync.tsx';
 import ReportFormModal from './components/ReportFormModal.tsx';
 import logoImg from './Logo5.png';
+import { getSupabaseConfig, pushStaffToSupabase, pushReportsToSupabase } from './utils/supabaseClient.ts';
 
 import {
   LayoutDashboard,
@@ -42,7 +44,7 @@ import {
 
 export default function App() {
   // Navigation & Filter States
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'matrix' | 'staff'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'matrix' | 'staff' | 'supabase'>('dashboard');
   const [filterType, setFilterType] = useState<'all' | 'province' | 'khan'>('all');
 
   // Time States (Defaults to Today's Year-Month-Day)
@@ -299,12 +301,23 @@ export default function App() {
     setStaff(updatedStaff);
     saveLocalStaff(updatedStaff);
 
+    // Auto-sync with Google Sheets if configured
     if (connectionState.spreadsheetId && accessToken) {
       try {
         await pushSettingsToSheet(connectionState.spreadsheetId, accessToken, updatedStaff);
       } catch (err) {
         console.warn('Failed to auto-sync staff details with Google Sheet. Values saved locally.', err);
       }
+    }
+
+    // Auto-sync with Supabase if configured
+    try {
+      const supabaseConfig = getSupabaseConfig();
+      if (supabaseConfig.isConfigured) {
+        await pushStaffToSupabase(updatedStaff);
+      }
+    } catch (err) {
+      console.warn('Failed to auto-sync staff details with Supabase. Values saved locally.', err);
     }
   };
 
@@ -320,12 +333,23 @@ export default function App() {
     setReports(updatedReports);
     saveLocalReports(updatedReports);
 
+    // Auto-sync with Google Sheets if configured
     if (connectionState.spreadsheetId && accessToken) {
       try {
         await saveReportsToSheet(connectionState.spreadsheetId, accessToken, [newReport]);
       } catch (err) {
         console.warn('Failed to auto-sync reports with Google Sheet. Values saved locally.', err);
       }
+    }
+
+    // Auto-sync with Supabase if configured
+    try {
+      const supabaseConfig = getSupabaseConfig();
+      if (supabaseConfig.isConfigured) {
+        await pushReportsToSupabase([newReport]);
+      }
+    } catch (err) {
+      console.warn('Failed to auto-sync reports with Supabase. Values saved locally.', err);
     }
   };
 
@@ -461,6 +485,17 @@ export default function App() {
               <Users className="w-4 h-4" />
               សមាជិកប្រចាំការ
             </button>
+            <button
+              onClick={() => setActiveTab('supabase')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'supabase'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/50'
+              }`}
+            >
+              <Database className="w-4 h-4" />
+              ការតភ្ជាប់ Supabase
+            </button>
           </div>
 
           {/* Sync status indicator */}
@@ -594,6 +629,19 @@ export default function App() {
               onSaveStaff={handleSaveStaffAssignments}
               isSyncing={connectionState.isLoading}
               isSheetsConnected={!!connectionState.spreadsheetId}
+            />
+          )}
+
+          {activeTab === 'supabase' && (
+            <SupabaseSync
+              localReports={reports}
+              localStaff={staff}
+              onDataSync={(syncedReports, syncedStaff) => {
+                setReports(syncedReports);
+                saveLocalReports(syncedReports);
+                setStaff(syncedStaff);
+                saveLocalStaff(syncedStaff);
+              }}
             />
           )}
 
