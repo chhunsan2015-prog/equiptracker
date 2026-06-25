@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { DailyReport, StaffAssignment } from '../types.ts';
+import { DEFAULT_BRANCHES } from '../constants.ts';
 
 // Storage keys for user credentials fallback
 const STORAGE_URL_KEY = 'tax_tracker_supabase_url';
@@ -17,10 +18,17 @@ export interface SupabaseConfig {
  */
 export function getSupabaseConfig(): SupabaseConfig {
   // 1. Try env variables
-  const envUrl = import.meta.env.VITE_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  let envUrl = import.meta.env.VITE_SUPABASE_URL;
+  let envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  if (envUrl && envKey) {
+  if (envUrl) envUrl = envUrl.trim().replace(/^['"]|['"]$/g, '');
+  if (envKey) envKey = envKey.trim().replace(/^['"]|['"]$/g, '');
+
+  if (envUrl && envKey && envUrl !== 'YOUR_SUPABASE_URL' && envKey !== 'YOUR_SUPABASE_ANON_KEY') {
+    // Heal URL if it doesn't start with http/https
+    if (!/^https?:\/\//i.test(envUrl)) {
+      envUrl = `https://${envUrl}`;
+    }
     return {
       url: envUrl,
       anonKey: envKey,
@@ -30,10 +38,16 @@ export function getSupabaseConfig(): SupabaseConfig {
   }
 
   // 2. Fallback to localStorage for instant setup in preview or custom domains without rebuild
-  const localUrl = localStorage.getItem(STORAGE_URL_KEY);
-  const localKey = localStorage.getItem(STORAGE_KEY_KEY);
+  let localUrl = localStorage.getItem(STORAGE_URL_KEY);
+  let localKey = localStorage.getItem(STORAGE_KEY_KEY);
+
+  if (localUrl) localUrl = localUrl.trim().replace(/^['"]|['"]$/g, '');
+  if (localKey) localKey = localKey.trim().replace(/^['"]|['"]$/g, '');
 
   if (localUrl && localKey) {
+    if (!/^https?:\/\//i.test(localUrl)) {
+      localUrl = `https://${localUrl}`;
+    }
     return {
       url: localUrl,
       anonKey: localKey,
@@ -55,8 +69,12 @@ export function getSupabaseConfig(): SupabaseConfig {
  */
 export function saveSupabaseConfig(url: string, anonKey: string): void {
   if (url && anonKey) {
-    localStorage.setItem(STORAGE_URL_KEY, url.trim());
-    localStorage.setItem(STORAGE_KEY_KEY, anonKey.trim());
+    let sanitizedUrl = url.trim().replace(/^['"]|['"]$/g, '');
+    if (sanitizedUrl && !/^https?:\/\//i.test(sanitizedUrl)) {
+      sanitizedUrl = `https://${sanitizedUrl}`;
+    }
+    localStorage.setItem(STORAGE_URL_KEY, sanitizedUrl);
+    localStorage.setItem(STORAGE_KEY_KEY, anonKey.trim().replace(/^['"]|['"]$/g, ''));
   } else {
     localStorage.removeItem(STORAGE_URL_KEY);
     localStorage.removeItem(STORAGE_KEY_KEY);
@@ -80,14 +98,52 @@ export function getSupabaseClient(): SupabaseClient | null {
   if (!supabaseInstance || lastUrl !== config.url || lastKey !== config.anonKey) {
     lastUrl = config.url;
     lastKey = config.anonKey;
-    supabaseInstance = createClient(config.url, config.anonKey, {
-      auth: {
-        persistSession: false,
-      }
-    });
+    try {
+      supabaseInstance = createClient(config.url, config.anonKey, {
+        auth: {
+          persistSession: false,
+        }
+      });
+    } catch (err) {
+      console.error('Error creating Supabase client:', err);
+      supabaseInstance = null;
+    }
   }
 
   return supabaseInstance;
+}
+
+/**
+ * Automatically ensures all branches defined in DEFAULT_BRANCHES exist in the Supabase database.
+ * This heals any foreign key constraint issues dynamically!
+ */
+export async function ensureBranchesExistInSupabase(): Promise<void> {
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  try {
+    const rows = DEFAULT_BRANCHES.map(b => ({
+      id: b.id,
+      name_kh: b.nameKh,
+      name_en: b.nameEn,
+      type: b.type,
+      default_staff: b.defaultStaff
+    }));
+
+    // Upsert all branches so that any missing ones are inserted,
+    // and existing ones are updated if needed. This prevents foreign key violations.
+    const { error } = await client
+      .from('branches')
+      .upsert(rows, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('Auto-seeding branches encountered an issue, but we will continue:', error);
+    } else {
+      console.log('Successfully synchronized branches with Supabase.');
+    }
+  } catch (err) {
+    console.error('Failed to ensure branches exist in Supabase:', err);
+  }
 }
 
 /**
@@ -98,6 +154,9 @@ export async function testSupabaseConnection(): Promise<boolean> {
   if (!client) return false;
 
   try {
+    // Automatically seed/heal branches when testing connection or initializing
+    await ensureBranchesExistInSupabase();
+
     const { data, error } = await client
       .from('branches')
       .select('id')
@@ -144,6 +203,9 @@ export async function pushStaffToSupabase(staffList: StaffAssignment[]): Promise
   if (!client) throw new Error('Supabase is not configured.');
 
   if (staffList.length === 0) return;
+
+  // Automatically heal any missing branches first
+  await ensureBranchesExistInSupabase();
 
   const rows = staffList.map(s => ({
     branch_id: s.branchId,
@@ -220,6 +282,9 @@ export async function pushReportsToSupabase(reportsList: DailyReport[]): Promise
   if (!client) throw new Error('Supabase is not configured.');
 
   if (reportsList.length === 0) return;
+
+  // Automatically heal any missing branches first
+  await ensureBranchesExistInSupabase();
 
   // Prepare chunks of 500 records to prevent HTTP payload size overflows
   const chunkSize = 500;

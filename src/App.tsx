@@ -585,17 +585,7 @@ export default function App() {
               <Users className="w-4 h-4" />
               សមាជិកប្រចាំការ
             </button>
-            <button
-              onClick={() => setActiveTab('supabase')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'supabase'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/50'
-              }`}
-            >
-              <Database className="w-4 h-4" />
-              ការតភ្ជាប់ Supabase
-            </button>
+            {/* Supabase Connection Tab is hidden by developer request */}
           </div>
 
           {/* Sync status indicator */}
