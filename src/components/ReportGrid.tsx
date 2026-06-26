@@ -56,9 +56,9 @@ export default function ReportGrid({
     return lookup;
   }, [reports]);
 
-  // Filter branches based on category & search query
+  // Filter branches based on category & search query and sort requested ones to the bottom
   const filteredBranches = useMemo(() => {
-    return branches.filter(b => {
+    const list = branches.filter(b => {
       // Category filter
       if (filterType === 'province' && b.type !== 'province') return false;
       if (filterType === 'khan' && b.type !== 'khan') return false;
@@ -72,6 +72,20 @@ export default function ReportGrid({
         b.nameEn.toLowerCase().includes(q) ||
         staffInfo.toLowerCase().includes(q)
       );
+    });
+
+    const bottomBranchIds = ['PROV_PLN', 'PROV_KRT', 'PROV_PST', 'PROV_KEP'];
+
+    return [...list].sort((a, b) => {
+      const aIsBottom = bottomBranchIds.includes(a.id);
+      const bIsBottom = bottomBranchIds.includes(b.id);
+
+      if (aIsBottom && !bIsBottom) return 1;
+      if (!aIsBottom && bIsBottom) return -1;
+      if (aIsBottom && bIsBottom) {
+        return bottomBranchIds.indexOf(a.id) - bottomBranchIds.indexOf(b.id);
+      }
+      return 0;
     });
   }, [branches, filterType, searchQuery, staff]);
 
