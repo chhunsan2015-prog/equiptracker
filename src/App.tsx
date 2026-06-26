@@ -618,28 +618,20 @@ export default function App() {
             {/* Offline/Online state indicator */}
             <div className="text-xs flex items-center gap-2">
               {getSupabaseConfig().isConfigured ? (
-                <button
-                  onClick={() => setIsSupabaseModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100 hover:bg-teal-100/70 transition cursor-pointer"
-                  title="ចុចដើម្បីកំណត់ការតភ្ជាប់ Supabase"
-                >
+                <span className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
                   <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
                   តភ្ជាប់ជាមួយ Supabase (Online)
-                </button>
+                </span>
               ) : connectionState.spreadsheetId ? (
                 <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
                   តំណភ្ជាប់ Sheets សកម្ម (Online)
                 </span>
               ) : (
-                <button
-                  onClick={() => setIsSupabaseModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 hover:bg-slate-200/80 transition cursor-pointer"
-                  title="ចុចដើម្បីកំណត់ការតភ្ជាប់ Supabase"
-                >
-                  <Database className="w-3.5 h-3.5 text-slate-500" />
-                  រៀបចំតភ្ជាប់ Supabase
-                </button>
+                <span className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+                  <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
+                  តភ្ជាប់ស្វ័យប្រវត្ត (Online)
+                </span>
               )}
             </div>
           </div>
@@ -784,17 +776,6 @@ export default function App() {
           <div className="flex-1">
             <h5 className="font-bold text-xs">សេចក្តីជូនដំណឹងពី Supabase</h5>
             <p className="text-[11px] mt-0.5 leading-relaxed font-medium">{syncNotification.message}</p>
-            {syncNotification.type === 'error' && (
-              <button
-                onClick={() => {
-                  setIsSupabaseModalOpen(true);
-                  setSyncNotification(null);
-                }}
-                className="mt-2 text-[10px] font-bold text-rose-700 bg-rose-100 hover:bg-rose-200/80 px-2 py-1 rounded border border-rose-200 transition cursor-pointer flex items-center gap-1"
-              >
-                ⚙️ ពិនិត្យ/កែប្រែការកំណត់ Supabase
-              </button>
-            )}
           </div>
           <button
             onClick={() => setSyncNotification(null)}
@@ -802,53 +783,6 @@ export default function App() {
           >
             <X className="w-3.5 h-3.5" />
           </button>
-        </div>
-      )}
-
-      {/* Floating Supabase Settings Modal */}
-      {isSupabaseModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-          <div className="bg-slate-50 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-8 max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="p-5 bg-[#1b4332] text-white flex items-center justify-between border-b-4 border-[#b7945d]">
-              <div className="flex items-center gap-2.5">
-                <Database className="w-5 h-5 text-amber-300" />
-                <h3 className="font-bold text-sm text-amber-200">
-                  ការកំណត់ការតភ្ជាប់ Supabase (Supabase Connection Settings)
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsSupabaseModalOpen(false)}
-                className="p-1.5 hover:bg-emerald-800 rounded-xl transition cursor-pointer text-white/80 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Scrollable Body */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-6">
-              <SupabaseSync
-                localReports={reports}
-                localStaff={staff}
-                onDataSync={(syncedReports, syncedStaff) => {
-                  setReports(syncedReports);
-                  saveLocalReports(syncedReports);
-                  setStaff(syncedStaff);
-                  saveLocalStaff(syncedStaff);
-                }}
-              />
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-100 border-t border-slate-200 flex justify-end">
-              <button
-                onClick={() => setIsSupabaseModalOpen(false)}
-                className="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
-              >
-                បិទផ្ទាំង (Close)
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
