@@ -139,10 +139,7 @@ export default function StaffSettings({
         {/* Database Badge */}
         <div className="flex items-center gap-1.5 self-start md:self-auto">
           {getSupabaseConfig().isConfigured ? (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
-              <Database className="w-3.5 h-3.5 animate-pulse" />
-              ភ្ជាប់ស្វ័យប្រវត្តជាមួយ Supabase (Online)
-            </span>
+            null
           ) : isSheetsConnected ? (
             <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
               <Database className="w-3.5 h-3.5" />

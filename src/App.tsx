@@ -620,7 +620,7 @@ export default function App() {
               {getSupabaseConfig().isConfigured ? (
                 <span className="inline-flex items-center gap-1.5 font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
                   <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
-                  តភ្ជាប់ជាមួយ Supabase (Online)
+                  ប្រព័ន្ធកំពុង (Online)
                 </span>
               ) : connectionState.spreadsheetId ? (
                 <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
