@@ -53,3 +53,23 @@ export const DEFAULT_BRANCHES: Branch[] = [
   { id: 'KHAN_SS', nameKh: 'សែនសុខ', nameEn: 'Khan Sen Sok', type: 'khan', defaultStaff: 'លឹម សុធារ៉ា' },
   { id: 'KHAN_MC', nameKh: 'មានជ័យ', nameEn: 'Khan Meanchey', type: 'khan', defaultStaff: 'សេង ពិសិដ្ឋ' },
 ];
+
+/**
+ * Calculates the number of working days (excluding Saturdays and Sundays) for a given month and year.
+ * @param year - The year (e.g., 2026)
+ * @param month - The month (1-indexed, e.g., 6 for June)
+ * @returns The number of working days
+ */
+export function getWorkingDaysInMonth(year: number, month: number): number {
+  const totalDays = new Date(year, month, 0).getDate();
+  let workingDays = 0;
+  for (let d = 1; d <= totalDays; d++) {
+    const dObj = new Date(year, month - 1, d);
+    const dayOfWeek = dObj.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      workingDays++;
+    }
+  }
+  return workingDays;
+}
+

@@ -5,7 +5,7 @@
 
 import React, { useMemo } from 'react';
 import { Branch, DailyReport, StaffAssignment, Equipment } from '../types.ts';
-import { EQUIPMENT_LIST } from '../constants.ts';
+import { EQUIPMENT_LIST, getWorkingDaysInMonth } from '../constants.ts';
 import { CheckCircle, XCircle, Users, Percent, HelpCircle, Activity, ChevronRight, Share2, ClipboardList, Clock } from 'lucide-react';
 
 interface DashboardStatsProps {
@@ -83,28 +83,8 @@ export default function DashboardStats({
     // Report frequency per branch
     const branchCompletion: Record<string, { posted: number; total: number; pct: number }> = {};
     
-    // We determine how many days in month up to today (if today is in the selected month) or full month days
     const [yr, mo] = selectedMonth.split('-').map(Number);
-    const totalDaysInMonth = new Date(yr, mo, 0).getDate();
-    const todayStr = new Date().toISOString().split('T')[0];
-    
-    let maxDayToCount = totalDaysInMonth;
-    if (selectedMonth === todayStr.substring(0, 7)) {
-      maxDayToCount = parseInt(todayStr.split('-')[2]); // count up to today's date
-    }
-
-    // Count only weekdays in the period
-    let weekdayCount = 0;
-    for (let d = 1; d <= maxDayToCount; d++) {
-      const dayStr = String(d).padStart(2, '0');
-      const dateStr = `${selectedMonth}-${dayStr}`;
-      const [y, m, dNum] = dateStr.split('-').map(Number);
-      const dObj = new Date(y, m - 1, dNum);
-      const dayOfWeek = dObj.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-        weekdayCount++;
-      }
-    }
+    const weekdayCount = getWorkingDaysInMonth(yr, mo);
 
     branches.forEach(b => {
       const bReports = monthReports.filter(r => r.branchId === b.id);

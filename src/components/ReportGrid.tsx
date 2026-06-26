@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Branch, DailyReport, StaffAssignment } from '../types.ts';
-import { EQUIPMENT_LIST } from '../constants.ts';
+import { EQUIPMENT_LIST, getWorkingDaysInMonth } from '../constants.ts';
 import { Check, X, Edit2, AlertCircle, Calendar, Filter, Users, ClipboardList, FileSpreadsheet } from 'lucide-react';
 import ExportReportModal from './ExportReportModal.tsx';
 
@@ -28,6 +28,12 @@ export default function ReportGrid({
 }: ReportGridProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // Local today date string (YYYY-MM-DD)
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, []);
 
   // Extract year and month
   const [year, month] = selectedMonth.split('-').map(Number);
@@ -92,13 +98,11 @@ export default function ReportGrid({
   // Calculate stats for each branch in the selected month
   const branchStats = useMemo(() => {
     const stats: Record<string, { posted: number; totalDays: number; pct: number }> = {};
+    const totalWorkingDays = getWorkingDaysInMonth(year, month);
     
     filteredBranches.forEach(b => {
       let postedCount = 0;
-      let totalValid = 0;
       
-      const todayStr = new Date().toISOString().split('T')[0];
-
       dateStrings.forEach(dateStr => {
         // Exclude weekends (Saturday = 6, Sunday = 0)
         const [y, m, dNum] = dateStr.split('-').map(Number);
@@ -110,7 +114,6 @@ export default function ReportGrid({
 
         // Only count days up to today as valid for tracking ratios
         if (dateStr <= todayStr) {
-          totalValid++;
           const r = reportLookup[`${dateStr}_${b.id}`];
           if (r && r.status === 'POSTED') {
             postedCount++;
@@ -120,13 +123,13 @@ export default function ReportGrid({
 
       stats[b.id] = {
         posted: postedCount,
-        totalDays: totalValid || 1,
-        pct: totalValid ? Math.round((postedCount / totalValid) * 100) : 0,
+        totalDays: totalWorkingDays || 1,
+        pct: totalWorkingDays ? Math.round((postedCount / totalWorkingDays) * 100) : 0,
       };
     });
 
     return stats;
-  }, [filteredBranches, dateStrings, reportLookup]);
+  }, [filteredBranches, dateStrings, reportLookup, todayStr, year, month]);
 
   return (
     <div id="report-grid-card" className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -198,7 +201,7 @@ export default function ReportGrid({
               {dateStrings.map((dateStr, index) => {
                 const dayNum = index + 1;
                 // Highlight today if relevant month
-                const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                const isToday = todayStr === dateStr;
                 const [y, m, dNum] = dateStr.split('-').map(Number);
                 const dObj = new Date(y, m - 1, dNum);
                 const dayOfWeek = dObj.getDay();

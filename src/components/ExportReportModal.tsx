@@ -6,6 +6,7 @@
 import React from 'react';
 import { Branch, DailyReport, StaffAssignment } from '../types.ts';
 import { FileSpreadsheet, Copy, X, Check, Award, AlertCircle, FileText, Download } from 'lucide-react';
+import { getWorkingDaysInMonth } from '../constants.ts';
 
 interface ExportReportModalProps {
   isOpen: boolean;
@@ -36,7 +37,10 @@ export default function ExportReportModal({
     return `${selectedMonth}-${dayStr}`;
   });
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
 
   // Helper code to map reports
   const reportLookup: Record<string, DailyReport> = {};
@@ -45,13 +49,12 @@ export default function ExportReportModal({
   });
 
   // Calculate statistics for the report preview
-  let totalValidDays = 0;
+  const totalWorkingDays = getWorkingDaysInMonth(year, month);
   let totalPostedCount = 0;
 
   const branchReportsSummary = branches.map(b => {
     const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
     let posted = 0;
-    let validDays = 0;
 
     dates.forEach(dateStr => {
       const [y, m, dNum] = dateStr.split('-').map(Number);
@@ -61,7 +64,6 @@ export default function ExportReportModal({
       if (dayOfWeek === 0 || dayOfWeek === 6) return;
 
       if (dateStr <= todayStr) {
-        validDays++;
         const r = reportLookup[`${dateStr}_${b.id}`];
         if (r && r.status === 'POSTED') {
           posted++;
@@ -69,9 +71,8 @@ export default function ExportReportModal({
       }
     });
 
-    const rate = validDays > 0 ? Math.round((posted / validDays) * 100) : 0;
+    const rate = totalWorkingDays > 0 ? Math.round((posted / totalWorkingDays) * 100) : 0;
     
-    totalValidDays += validDays;
     totalPostedCount += posted;
 
     return {
@@ -79,11 +80,12 @@ export default function ExportReportModal({
       branchEn: b.nameEn,
       staff: bStaff,
       posted,
-      total: validDays,
+      total: totalWorkingDays,
       rate,
     };
   });
 
+  const totalValidDays = branches.length * totalWorkingDays;
   const overallRate = totalValidDays > 0 ? Math.round((totalPostedCount / totalValidDays) * 100) : 0;
 
   // Outstanding branches (100% rate)
