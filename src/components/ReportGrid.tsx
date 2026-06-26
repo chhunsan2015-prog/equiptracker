@@ -74,7 +74,7 @@ export default function ReportGrid({
       );
     });
 
-    const bottomBranchIds = ['PROV_PLN', 'PROV_KRT', 'PROV_PST', 'PROV_KEP'];
+    const bottomBranchIds = ['PROV_PLN', 'PROV_KRT', 'PROV_PST', 'PROV_KEP', 'PROV_OMC'];
 
     return [...list].sort((a, b) => {
       const aIsBottom = bottomBranchIds.includes(a.id);
