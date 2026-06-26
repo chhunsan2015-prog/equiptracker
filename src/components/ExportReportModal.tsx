@@ -54,6 +54,11 @@ export default function ExportReportModal({
     let validDays = 0;
 
     dates.forEach(dateStr => {
+      const d = new Date(dateStr);
+      const dayOfWeek = d.getDay();
+      // Exclude weekends (Saturday = 6, Sunday = 0)
+      if (dayOfWeek === 0 || dayOfWeek === 6) return;
+
       if (dateStr <= todayStr) {
         validDays++;
         const r = reportLookup[`${dateStr}_${b.id}`];
@@ -108,7 +113,19 @@ export default function ExportReportModal({
         let validDays = 0;
 
         const dayStatuses = dates.map(dateStr => {
+          const d = new Date(dateStr);
+          const dayOfWeek = d.getDay();
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
           if (dateStr <= todayStr) {
+            if (isWeekend) {
+              const r = reportLookup[`${dateStr}_${b.id}`];
+              if (r && r.status === 'POSTED') {
+                return '☑ (ចុងសប្តាហ៍)';
+              }
+              return 'ចុងសប្តាហ៍';
+            }
+
             validDays++;
             const r = reportLookup[`${dateStr}_${b.id}`];
             if (r) {
@@ -116,7 +133,7 @@ export default function ExportReportModal({
                 posted++;
                 return '☑';
               } else {
-                return 'NOT POSTED';
+                return '';
               }
             }
             return '';

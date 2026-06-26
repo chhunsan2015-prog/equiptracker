@@ -68,8 +68,14 @@ export default function DashboardStats({
 
   // Monthly aggregated statistics
   const monthlyStats = useMemo(() => {
-    // Filter reports for the selected month
-    const monthReports = reports.filter(r => r.date.startsWith(selectedMonth));
+    // Filter reports for the selected month that are NOT on weekends (Saturdays and Sundays)
+    const monthReports = reports.filter(r => {
+      if (!r.date.startsWith(selectedMonth)) return false;
+      const d = new Date(r.date);
+      const dayOfWeek = d.getDay();
+      return dayOfWeek !== 0 && dayOfWeek !== 6;
+    });
+
     const totalReports = monthReports.length;
     const postedCount = monthReports.filter(r => r.status === 'POSTED').length;
 
@@ -81,25 +87,36 @@ export default function DashboardStats({
     const totalDaysInMonth = new Date(yr, mo, 0).getDate();
     const todayStr = new Date().toISOString().split('T')[0];
     
-    let daysToCount = totalDaysInMonth;
+    let maxDayToCount = totalDaysInMonth;
     if (selectedMonth === todayStr.substring(0, 7)) {
-      daysToCount = parseInt(todayStr.split('-')[2]); // count up to today's date
+      maxDayToCount = parseInt(todayStr.split('-')[2]); // count up to today's date
+    }
+
+    // Count only weekdays in the period
+    let weekdayCount = 0;
+    for (let d = 1; d <= maxDayToCount; d++) {
+      const dayStr = String(d).padStart(2, '0');
+      const dateStr = `${selectedMonth}-${dayStr}`;
+      const dayOfWeek = new Date(dateStr).getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        weekdayCount++;
+      }
     }
 
     branches.forEach(b => {
       const bReports = monthReports.filter(r => r.branchId === b.id);
       const posted = bReports.filter(r => r.status === 'POSTED').length;
-      const pct = daysToCount > 0 ? Math.round((posted / daysToCount) * 100) : 0;
-      branchCompletion[b.id] = { posted, total: daysToCount, pct };
+      const pct = weekdayCount > 0 ? Math.round((posted / weekdayCount) * 100) : 0;
+      branchCompletion[b.id] = { posted, total: weekdayCount, pct };
     });
 
-    // Top performers (pct >= 90)
+    // Top performers (pct >= 80)
     const topPerformers = branches
       .map(b => ({ branch: b, ...branchCompletion[b.id] }))
       .filter(item => item.pct >= 80)
       .sort((a, b) => b.pct - a.pct || a.branch.nameKh.localeCompare(b.branch.nameKh));
 
-    // Poorest performers (needs attention, pct < 50)
+    // Poorest performers (needs attention, pct < 60)
     const lowPerformers = branches
       .map(b => ({ branch: b, ...branchCompletion[b.id] }))
       .filter(item => item.pct < 60)
@@ -109,7 +126,9 @@ export default function DashboardStats({
       totalReports,
       overallPosted: postedCount,
       overallPct: totalReports > 0 ? Math.round((postedCount / totalReports) * 100) : 0,
-      completionRate: branches.length > 0 ? Math.round((postedCount / (branches.length * daysToCount)) * 100) : 0,
+      completionRate: branches.length > 0 && weekdayCount > 0 
+        ? Math.round((postedCount / (branches.length * weekdayCount)) * 100) 
+        : 0,
       topPerformers,
       lowPerformers,
     };

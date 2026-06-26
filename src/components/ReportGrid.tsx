@@ -100,6 +100,13 @@ export default function ReportGrid({
       const todayStr = new Date().toISOString().split('T')[0];
 
       dateStrings.forEach(dateStr => {
+        // Exclude weekends (Saturday = 6, Sunday = 0)
+        const d = new Date(dateStr);
+        const dayOfWeek = d.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          return; // Skip weekend days for calculation
+        }
+
         // Only count days up to today as valid for tracking ratios
         if (dateStr <= todayStr) {
           totalValid++;
@@ -187,18 +194,33 @@ export default function ReportGrid({
               </th>
 
               {/* Day Headers */}
-              {dateStrings.map((_, index) => {
+              {dateStrings.map((dateStr, index) => {
                 const dayNum = index + 1;
                 // Highlight today if relevant month
-                const isToday = new Date().toISOString().split('T')[0] === dateStrings[index];
+                const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                const d = new Date(dateStr);
+                const dayOfWeek = d.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const isSaturday = dayOfWeek === 6;
+
                 return (
                   <th
                     key={dayNum}
-                    className={`px-2 py-3 text-center border-r border-slate-100 min-w-[42px] ${
-                      isToday ? 'bg-amber-50 text-amber-800 font-bold border-b-2 border-b-amber-500' : ''
+                    className={`px-1 py-2 text-center border-r border-slate-100 min-w-[42px] text-[10px] ${
+                      isToday 
+                        ? 'bg-amber-50 text-amber-800 font-bold border-b-2 border-b-amber-500' 
+                        : isWeekend 
+                          ? 'bg-slate-100/70 text-slate-400 font-normal' 
+                          : 'text-slate-600 font-semibold'
                     }`}
+                    title={isWeekend ? (isSaturday ? 'ថ្ងៃសៅរ៍ (ចុងសប្តាហ៍)' : 'ថ្ងៃអាទិត្យ (ចុងសប្តាហ៍)') : undefined}
                   >
-                    {dayNum}
+                    <div className="flex flex-col items-center justify-center">
+                      <span>{dayNum}</span>
+                      <span className="text-[8px] font-bold mt-0.5 opacity-80">
+                        {isWeekend ? (isSaturday ? 'ស' : 'អ') : ''}
+                      </span>
+                    </div>
                   </th>
                 );
               })}
@@ -240,7 +262,13 @@ export default function ReportGrid({
                     {/* Status Cells */}
                     {dateStrings.map((dateStr) => {
                       const report = reportLookup[`${dateStr}_${branch.id}`];
-                      let cellClass = 'bg-white hover:bg-emerald-50/40 cursor-pointer text-slate-300';
+                      const d = new Date(dateStr);
+                      const dayOfWeek = d.getDay();
+                      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                      let cellClass = isWeekend 
+                        ? 'bg-slate-50 hover:bg-emerald-50/40 cursor-pointer text-slate-300/40'
+                        : 'bg-white hover:bg-emerald-50/40 cursor-pointer text-slate-300';
                       let icon = null;
 
                       if (report) {
@@ -261,7 +289,7 @@ export default function ReportGrid({
                           id={cellId}
                           onClick={() => onCellClick(branch.id, dateStr)}
                           className={`text-center p-1.5 transition-all outline-none border-r border-slate-50 font-medium select-none ${cellClass}`}
-                          title={`${branch.nameKh} - ${dateStr} ${report ? `(${report.status === 'POSTED' ? 'បាន Post' : 'អត់បាន Post'}: ${report.reporterName || 'គ្មានឈ្មោះ'})` : '(ចុចដើម្បីបន្ថែមរាយការណ៍)'}`}
+                          title={`${branch.nameKh} - ${dateStr}${isWeekend ? ' (ចុងសប្តាហ៍ - មិនរាប់បញ្ចូល)' : ''} ${report ? `(${report.status === 'POSTED' ? 'បាន Post' : 'អត់បាន Post'}: ${report.reporterName || 'គ្មានឈ្មោះ'})` : '(ចុចដើម្បីបន្ថែមរាយការណ៍)'}`}
                         >
                           <div className="min-h-[22px] flex items-center justify-center">
                             {icon}
