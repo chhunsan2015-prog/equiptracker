@@ -101,8 +101,9 @@ export default function ReportGrid({
 
       dateStrings.forEach(dateStr => {
         // Exclude weekends (Saturday = 6, Sunday = 0)
-        const d = new Date(dateStr);
-        const dayOfWeek = d.getDay();
+        const [y, m, dNum] = dateStr.split('-').map(Number);
+        const dObj = new Date(y, m - 1, dNum);
+        const dayOfWeek = dObj.getDay();
         if (dayOfWeek === 0 || dayOfWeek === 6) {
           return; // Skip weekend days for calculation
         }
@@ -198,8 +199,9 @@ export default function ReportGrid({
                 const dayNum = index + 1;
                 // Highlight today if relevant month
                 const isToday = new Date().toISOString().split('T')[0] === dateStr;
-                const d = new Date(dateStr);
-                const dayOfWeek = d.getDay();
+                const [y, m, dNum] = dateStr.split('-').map(Number);
+                const dObj = new Date(y, m - 1, dNum);
+                const dayOfWeek = dObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 const isSaturday = dayOfWeek === 6;
 
@@ -262,8 +264,9 @@ export default function ReportGrid({
                     {/* Status Cells */}
                     {dateStrings.map((dateStr) => {
                       const report = reportLookup[`${dateStr}_${branch.id}`];
-                      const d = new Date(dateStr);
-                      const dayOfWeek = d.getDay();
+                      const [y, m, dNum] = dateStr.split('-').map(Number);
+                      const dObj = new Date(y, m - 1, dNum);
+                      const dayOfWeek = dObj.getDay();
                       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
                       let cellClass = isWeekend 

@@ -54,8 +54,9 @@ export default function ExportReportModal({
     let validDays = 0;
 
     dates.forEach(dateStr => {
-      const d = new Date(dateStr);
-      const dayOfWeek = d.getDay();
+      const [y, m, dNum] = dateStr.split('-').map(Number);
+      const dObj = new Date(y, m - 1, dNum);
+      const dayOfWeek = dObj.getDay();
       // Exclude weekends (Saturday = 6, Sunday = 0)
       if (dayOfWeek === 0 || dayOfWeek === 6) return;
 
@@ -113,8 +114,9 @@ export default function ExportReportModal({
         let validDays = 0;
 
         const dayStatuses = dates.map(dateStr => {
-          const d = new Date(dateStr);
-          const dayOfWeek = d.getDay();
+          const [y, m, dNum] = dateStr.split('-').map(Number);
+          const dObj = new Date(y, m - 1, dNum);
+          const dayOfWeek = dObj.getDay();
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
           if (dateStr <= todayStr) {

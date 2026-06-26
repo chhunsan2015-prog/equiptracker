@@ -71,8 +71,9 @@ export default function DashboardStats({
     // Filter reports for the selected month that are NOT on weekends (Saturdays and Sundays)
     const monthReports = reports.filter(r => {
       if (!r.date.startsWith(selectedMonth)) return false;
-      const d = new Date(r.date);
-      const dayOfWeek = d.getDay();
+      const [y, m, dNum] = r.date.split('-').map(Number);
+      const dObj = new Date(y, m - 1, dNum);
+      const dayOfWeek = dObj.getDay();
       return dayOfWeek !== 0 && dayOfWeek !== 6;
     });
 
@@ -97,7 +98,9 @@ export default function DashboardStats({
     for (let d = 1; d <= maxDayToCount; d++) {
       const dayStr = String(d).padStart(2, '0');
       const dateStr = `${selectedMonth}-${dayStr}`;
-      const dayOfWeek = new Date(dateStr).getDay();
+      const [y, m, dNum] = dateStr.split('-').map(Number);
+      const dObj = new Date(y, m - 1, dNum);
+      const dayOfWeek = dObj.getDay();
       if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         weekdayCount++;
       }
@@ -137,7 +140,8 @@ export default function DashboardStats({
   // Format date helper (Cambodian date style)
   const formatKhDate = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
+      const [y, m, dNum] = dateStr.split('-').map(Number);
+      const d = new Date(y, m - 1, dNum);
       const days = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
       const months = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
       
