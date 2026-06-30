@@ -99,6 +99,18 @@ export default function ExportReportModal({
    */
   const handleDownloadCSV = () => {
     try {
+      // Rearrange branches so that OMC, KRT, KEP, PST, PLN are at the very bottom rows
+      const bottomBranchIds = ['PROV_OMC', 'PROV_KRT', 'PROV_KEP', 'PROV_PST', 'PROV_PLN'];
+      const bottomBranchesList = branches.filter(b => bottomBranchIds.includes(b.id));
+      const otherBranches = branches.filter(b => !bottomBranchIds.includes(b.id));
+
+      // Sort the bottom branches to match the exact order: Oddar Meanchey, Kratie, Kep, Pursat, Pailin
+      bottomBranchesList.sort((a, b) => {
+        return bottomBranchIds.indexOf(a.id) - bottomBranchIds.indexOf(b.id);
+      });
+
+      const sortedBranchesForExcel = [...otherBranches, ...bottomBranchesList];
+
       // Days headers
       const dayHeadersHTML = Array.from({ length: daysInMonth }, (_, i) => {
         const dayNum = i + 1;
@@ -120,8 +132,8 @@ export default function ExportReportModal({
         `;
       }).join('');
 
-      // Build table rows
-      const rowsHTML = branches.map(b => {
+      // Build table rows based on sorted branches
+      const rowsHTML = sortedBranchesForExcel.map(b => {
         const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
         let postedCount = 0;
 
@@ -188,6 +200,20 @@ export default function ExportReportModal({
         'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
       ];
       const khmerMonthName = khmerMonths[month - 1] || '';
+
+      // Format current date to Khmer characters
+      const khmerNumbers = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+      const toKhmerNumber = (num: number | string) => {
+        return String(num).split('').map(char => {
+          const idx = parseInt(char, 10);
+          return isNaN(idx) ? char : khmerNumbers[idx];
+        }).join('');
+      };
+
+      const currentDate = new Date();
+      const khmerDay = toKhmerNumber(currentDate.getDate());
+      const khmerYear = toKhmerNumber(currentDate.getFullYear());
+      const khmerMonthNameToday = khmerMonths[currentDate.getMonth()];
 
       const htmlContent = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -331,6 +357,24 @@ export default function ExportReportModal({
           <div class="title">របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ</div>
           <div class="subtitle">ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}</div>
           
+          <!-- Legend indicators table -->
+          <table style="border: none; margin-bottom: 15px; width: auto; margin-left: 0;">
+            <tr style="border: none;">
+              <td style="border: none; text-align: left; padding: 5px 15px 5px 0; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
+                <span style="border: 1px solid #10b981; background-color: #ecfdf5; color: #10b981; padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-right: 4px;">✓</span> 
+                បានរាយការណ៍ក្នុង Telegram (POSTED)
+              </td>
+              <td style="border: none; text-align: left; padding: 5px 15px; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
+                <span style="border: 1px solid #ef4444; background-color: #fef2f2; color: #ef4444; padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-right: 4px;">✗</span> 
+                អត់បានរាយការណ៍ (NOT POSTED)
+              </td>
+              <td style="border: none; text-align: left; padding: 5px 15px; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
+                <span style="border: 1px solid #94a3b8; background-color: #f8fafc; color: #94a3b8; padding: 1px 8px; border-radius: 3px; font-weight: bold; margin-right: 4px;">&nbsp;&nbsp;</span> 
+                មិនទាន់មានទិន្នន័យ (No Data / Out of range)
+              </td>
+            </tr>
+          </table>
+
           <table>
             <thead>
               <tr>
@@ -343,6 +387,24 @@ export default function ExportReportModal({
             <tbody>
               ${rowsHTML}
             </tbody>
+          </table>
+
+          <!-- Signature and date table -->
+          <table style="border: none; margin-top: 30px; width: 100%;">
+            <tr style="border: none;">
+              <td style="border: none; width: 60%;"></td>
+              <td style="border: none; width: 40%; text-align: center; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;">
+                <div style="font-size: 11pt; font-style: italic; color: #475569; margin-bottom: 5px;">
+                  ធ្វើនៅភ្នំពេញ, ថ្ងៃទី ${khmerDay} ខែ ${khmerMonthNameToday} ឆ្នាំ ${khmerYear}
+                </div>
+                <div style="font-size: 11pt; font-weight: bold; color: #1e293b; margin-bottom: 60px;">
+                  អ្នករៀបចំរបាយការណ៍
+                </div>
+                <div style="font-size: 10pt; color: #64748b;">
+                  ......................................................
+                </div>
+              </td>
+            </tr>
           </table>
         </body>
         </html>
