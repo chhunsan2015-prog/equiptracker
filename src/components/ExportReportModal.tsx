@@ -99,88 +99,265 @@ export default function ExportReportModal({
    */
   const handleDownloadCSV = () => {
     try {
-      // CSV headers
-      const csvHeaders = [
-        'សាខាខេត្ត/ខណ្ឌ (Branch Name)',
-        'មន្ត្រីបង្គោល (Technical Staff)',
-        ...Array.from({ length: daysInMonth }, (_, i) => `ថ្ងៃទី ${i + 1}`),
-        'ចំនួនបាន Post',
-        'ចំនួនថ្ងៃទាមទារ',
-        'អត្រាសម្រេច (%)'
-      ];
+      // Days headers
+      const dayHeadersHTML = Array.from({ length: daysInMonth }, (_, i) => {
+        const dayNum = i + 1;
+        const dateStr = `${selectedMonth}-${String(dayNum).padStart(2, '0')}`;
+        const [y, m, dNum] = dateStr.split('-').map(Number);
+        const dObj = new Date(y, m - 1, dNum);
+        const dayOfWeek = dObj.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const isSaturday = dayOfWeek === 6;
+        
+        const headerClass = isWeekend ? 'header-day-weekend' : 'header-day';
+        const weekendIndicator = isWeekend ? (isSaturday ? 'ស' : 'អ') : '';
+        
+        return `
+          <th class="${headerClass}">
+            <div style="font-size: 10pt; font-weight: bold;">${dayNum}</div>
+            <div style="font-size: 8pt; font-weight: normal; opacity: 0.8; margin-top: 1px;">${weekendIndicator}</div>
+          </th>
+        `;
+      }).join('');
 
-      // Convert rows
-      const rows = branches.map(b => {
+      // Build table rows
+      const rowsHTML = branches.map(b => {
         const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
-        let posted = 0;
-        let validDays = 0;
+        let postedCount = 0;
 
-        const dayStatuses = dates.map(dateStr => {
+        // Day cell values
+        const dayCellsHTML = dates.map(dateStr => {
           const [y, m, dNum] = dateStr.split('-').map(Number);
           const dObj = new Date(y, m - 1, dNum);
           const dayOfWeek = dObj.getDay();
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
+          const r = reportLookup[`${dateStr}_${b.id}`];
+          const hasReport = !!r;
+          const isPosted = hasReport && r.status === 'POSTED';
+
           if (dateStr <= todayStr) {
             if (isWeekend) {
-              const r = reportLookup[`${dateStr}_${b.id}`];
-              if (r && r.status === 'POSTED') {
-                return '☑ (ចុងសប្តាហ៍)';
+              if (isPosted) {
+                return `<td class="cell-weekend-posted">✔</td>`;
               }
-              return 'ចុងសប្តាហ៍';
+              return `<td class="cell-weekend">ស-អ</td>`;
             }
 
-            validDays++;
-            const r = reportLookup[`${dateStr}_${b.id}`];
-            if (r) {
-              if (r.status === 'POSTED') {
-                posted++;
-                return '☑';
-              } else {
-                return '';
-              }
+            if (isPosted) {
+              postedCount++;
+              return `<td class="cell-posted">✔</td>`;
+            } else if (hasReport && r.status === 'NOT_POSTED') {
+              return `<td class="cell-unposted">✘</td>`;
             }
-            return '';
+            return `<td></td>`;
           }
-          return '-';
-        });
+          
+          return `<td style="color: #cbd5e1; font-size: 9pt;">-</td>`;
+        }).join('');
 
-        const rate = validDays > 0 ? Math.round((posted / validDays) * 100) : 0;
+        const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
+        let rateClass = 'rate-low';
+        if (rate >= 90) {
+          rateClass = 'rate-high';
+        } else if (rate >= 60) {
+          rateClass = 'rate-medium';
+        }
 
-        return [
-          b.nameKh,
-          bStaff,
-          ...dayStatuses,
-          posted,
-          validDays,
-          `${rate}%`
-        ];
-      });
+        return `
+          <tr>
+            <td class="branch-name">
+              <div style="font-size: 10pt; font-weight: bold;">${b.nameKh}</div>
+              <div class="branch-en">${b.nameEn}</div>
+            </td>
+            <td class="staff-name">${bStaff}</td>
+            ${dayCellsHTML}
+            <td class="${rateClass}">
+              <div style="font-size: 11pt; font-weight: bold;">${rate}%</div>
+              <div style="font-size: 8pt; font-weight: normal; color: #475569; margin-top: 1px;">
+                (${postedCount}/${totalWorkingDays} ថ្ងៃ)
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
-      // Join CSV elements
-      const csvMatrix = [csvHeaders, ...rows];
-      const csvString = csvMatrix
-        .map(row => row.map(value => {
-          // Escape quotes and commas if any
-          let str = String(value);
-          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-            str = `"${str.replace(/"/g, '""')}"`;
-          }
-          return str;
-        }).join(','))
-        .join('\n');
+      // Get Khmer month name
+      const khmerMonths = [
+        'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា',
+        'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+      ];
+      const khmerMonthName = khmerMonths[month - 1] || '';
+
+      const htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"/>
+          <!--[if gte mso 9]>
+          <xml>
+            <x:ExcelWorkbook>
+              <x:ExcelWorksheets>
+                <x:ExcelWorksheet>
+                  <x:Name>Summary Report</x:Name>
+                  <x:WorksheetOptions>
+                    <x:DisplayGridlines/>
+                  </x:WorksheetOptions>
+                </x:ExcelWorksheet>
+              </x:ExcelWorksheets>
+            </x:ExcelWorkbook>
+          </xml>
+          <![endif]-->
+          <style>
+            body {
+              margin: 20px;
+              font-family: 'Khmer OS Siemreap', 'Siemreap', 'Segoe UI', sans-serif;
+            }
+            .title {
+              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
+              color: #0f172a;
+              font-size: 16pt;
+              font-weight: bold;
+              text-align: center;
+              margin-bottom: 5px;
+            }
+            .subtitle {
+              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
+              color: #475569;
+              font-size: 11pt;
+              text-align: center;
+              margin-bottom: 20px;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
+            }
+            th, td {
+              border: 1px solid #cbd5e1;
+              padding: 6px 4px;
+              text-align: center;
+              font-size: 10pt;
+              vertical-align: middle;
+            }
+            th {
+              background-color: #f1f5f9;
+              color: #1e293b;
+              font-weight: bold;
+            }
+            .header-main {
+              background-color: #1e293b;
+              color: #ffffff;
+              font-weight: bold;
+              padding: 10px 6px;
+            }
+            .header-day {
+              min-width: 32px;
+              background-color: #f8fafc;
+              color: #334155;
+            }
+            .header-day-weekend {
+              background-color: #e2e8f0;
+              color: #64748b;
+              font-weight: normal;
+              min-width: 32px;
+            }
+            .branch-name {
+              text-align: left;
+              font-weight: bold;
+              background-color: #ffffff;
+              color: #0f172a;
+              min-width: 170px;
+              padding-left: 8px;
+            }
+            .branch-en {
+              font-size: 7.5pt;
+              color: #64748b;
+              font-weight: normal;
+              margin-top: 2px;
+            }
+            .staff-name {
+              background-color: #ffffff;
+              color: #334155;
+              font-weight: normal;
+              min-width: 110px;
+            }
+            .cell-posted {
+              background-color: #d1fae5;
+              color: #065f46;
+              font-weight: bold;
+              font-size: 11pt;
+            }
+            .cell-unposted {
+              background-color: #fee2e2;
+              color: #991b1b;
+              font-weight: bold;
+              font-size: 11pt;
+            }
+            .cell-weekend {
+              background-color: #f8fafc;
+              color: #94a3b8;
+              font-size: 7.5pt;
+            }
+            .cell-weekend-posted {
+              background-color: #d1fae5;
+              color: #065f46;
+              font-weight: bold;
+              font-size: 11pt;
+            }
+            .rate-high {
+              background-color: #d1fae5;
+              color: #065f46;
+              font-weight: bold;
+              font-size: 10pt;
+              min-width: 85px;
+            }
+            .rate-medium {
+              background-color: #fef3c7;
+              color: #92400e;
+              font-weight: bold;
+              font-size: 10pt;
+              min-width: 85px;
+            }
+            .rate-low {
+              background-color: #fee2e2;
+              color: #991b1b;
+              font-weight: bold;
+              font-size: 10pt;
+              min-width: 85px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="title">របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ</div>
+          <div class="subtitle">ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}</div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th class="header-main" style="text-align: left;">សាខាខេត្ត/ខណ្ឌ (Branch Name)</th>
+                <th class="header-main">មន្ត្រីបង្គោល (Technical Staff)</th>
+                ${dayHeadersHTML}
+                <th class="header-main">អត្រា Post</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHTML}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
 
       // Khmer Unicode Safe download stream creation
-      const utf8Bom = '\uFEFF';
-      const blob = new Blob([utf8Bom + csvString], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', `Daily_Equipment_Report_Summary_${selectedMonth}.csv`);
+      link.setAttribute('download', `Daily_Equipment_Report_Summary_${selectedMonth}.xls`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (e) {
-      alert('កំហុសពេលទាញយក CSV៖ ' + String(e));
+      alert('កំហុសពេលទាញយក Excel៖ ' + String(e));
     }
   };
 
