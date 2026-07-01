@@ -257,7 +257,7 @@ export default function ExportReportModal({
 
         // Column A: Branch Name
         setCell(0, rowIndex, b.nameKh, {
-          font: { sz: 9.5, bold: true, color: { rgb: '0F172A' } },
+          font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
           alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
           border: tableBorder
         });
