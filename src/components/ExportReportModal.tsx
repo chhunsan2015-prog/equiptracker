@@ -325,15 +325,15 @@ export default function ExportReportModal({
 
         // Column Rate: Completion Rate
         const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
-        let fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FCE8E6' } }; // Soft light red background
-        let fontRate = { sz: 10, bold: true, color: { rgb: 'C5221F' } }; // Premium readable red text
+        let fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FFE4E6' } }; // Soft light rose background (rose-100)
+        let fontRate = { sz: 9.5, bold: true, color: { rgb: '9F1239' } }; // Dark red text (rose-800)
 
         if (rate >= 90) {
-          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'E6F4EA' } }; // Soft light green background
-          fontRate = { sz: 10, bold: true, color: { rgb: '137333' } }; // Premium readable green text
+          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'D1FAE5' } }; // Soft light green background (emerald-100)
+          fontRate = { sz: 9.5, bold: true, color: { rgb: '065F46' } }; // Dark green text (emerald-800)
         } else if (rate >= 60) {
-          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEF7E0' } }; // Soft light yellow background
-          fontRate = { sz: 10, bold: true, color: { rgb: 'B06000' } }; // Premium readable gold/bronze text
+          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEF3C7' } }; // Soft light yellow background (amber-100)
+          fontRate = { sz: 9.5, bold: true, color: { rgb: '92400E' } }; // Dark orange/brown text (amber-800)
         }
 
         setCell(rateColIndex, rowIndex, `${rate}%\n(${postedCount}/${totalWorkingDays} ថ្ងៃ)`, {
