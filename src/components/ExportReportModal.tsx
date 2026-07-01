@@ -95,7 +95,7 @@ export default function ExportReportModal({
   const attentionBranches = branchReportsSummary.filter(b => b.rate < 60);
 
   /**
-   * Action function: Export grid to a clean and styled Excel (.xls) file with June 2026 template layout
+   * Action function: Export grid to a clean and styled Excel (.xlsx) file using xlsx-js-style
    */
   const handleDownloadCSV = () => {
     try {
@@ -131,8 +131,94 @@ export default function ExportReportModal({
       const khmerYear = toKhmerNumber(currentDate.getFullYear());
       const khmerMonthNameToday = khmerMonths[currentDate.getMonth()];
 
-      // Days headers
-      const dayHeadersHTML = Array.from({ length: daysInMonth }, (_, i) => {
+      // Create new Workbook & Worksheet using xlsx-js-style
+      const wb = XLSX.utils.book_new();
+      const ws: Record<string, any> = {};
+
+      const setCell = (col: number, row: number, value: any, style: any = {}, type: string = 's') => {
+        const cellRef = XLSX.utils.encode_cell({ c: col, r: row });
+        ws[cellRef] = {
+          v: value,
+          t: type,
+          s: {
+            font: { name: 'Khmer OS Siemreap', sz: 10, ...style.font },
+            alignment: { vertical: 'center', ...style.alignment },
+            fill: style.fill || undefined,
+            border: style.border || undefined,
+          }
+        };
+      };
+
+      const rateColIndex = 2 + daysInMonth;
+
+      // Title & Subtitle Row
+      setCell(0, 0, "របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
+        font: { sz: 16, bold: true, color: { rgb: '0F172A' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+
+      setCell(0, 1, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
+        font: { sz: 11, italic: true, color: { rgb: '475569' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+
+      // Legend Row (Row index 3)
+      // Legend 1: "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)" (Col A)
+      setCell(0, 3, "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)", {
+        font: { sz: 9.5, bold: true, color: { rgb: '10B981' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+      // Legend 2: "☒ អត់បានរាយការណ៍ (NOT POSTED)" (Col J / Index 9)
+      setCell(9, 3, "☒ អត់បានរាយការណ៍ (NOT POSTED)", {
+        font: { sz: 9.5, bold: true, color: { rgb: 'EF4444' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+      // Legend 3: "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)" (Col S / Index 18)
+      setCell(18, 3, "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)", {
+        font: { sz: 9.5, bold: true, color: { rgb: '64748B' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+
+      // Borders config
+      const tableBorder = {
+        top: { style: 'thin', color: { rgb: 'CBD5E1' } },
+        bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+        left: { style: 'thin', color: { rgb: 'CBD5E1' } },
+        right: { style: 'thin', color: { rgb: 'CBD5E1' } }
+      };
+
+      // Header style
+      const mainHeaderStyle = {
+        fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: '1E293B' } },
+        font: { sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: tableBorder
+      };
+
+      const weekdayHeaderStyle = {
+        fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'F8FAFC' } },
+        font: { sz: 9, bold: true, color: { rgb: '334155' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: tableBorder
+      };
+
+      const weekendHeaderStyle = {
+        fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'E2E8F0' } },
+        font: { sz: 9, bold: true, color: { rgb: '64748B' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: tableBorder
+      };
+
+      // Write table headers (Row index 4 and Row index 5)
+      setCell(0, 4, "សាខាខេត្ត/ខណ្ឌ (Branch Name)", mainHeaderStyle);
+      setCell(0, 5, "", mainHeaderStyle);
+
+      setCell(1, 4, "មន្ត្រីបង្គោល (Technical Staff)", mainHeaderStyle);
+      setCell(1, 5, "", mainHeaderStyle);
+
+      // Write Day Headers
+      for (let i = 0; i < daysInMonth; i++) {
+        const colIndex = 2 + i;
         const dayNum = i + 1;
         const dateStr = `${selectedMonth}-${String(dayNum).padStart(2, '0')}`;
         const [y, m, dNum] = dateStr.split('-').map(Number);
@@ -140,25 +226,52 @@ export default function ExportReportModal({
         const dayOfWeek = dObj.getDay();
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
         const isSaturday = dayOfWeek === 6;
-        
-        const headerClass = isWeekend ? 'header-day-weekend' : 'header-day';
-        const weekendIndicator = isWeekend ? (isSaturday ? 'ស' : 'អ') : '';
-        
-        return `
-          <th class="${headerClass}">
-            <div style="font-size: 10pt; font-weight: bold;">${dayNum}</div>
-            <div style="font-size: 8pt; font-weight: normal; opacity: 0.8; margin-top: 1px;">${weekendIndicator}</div>
-          </th>
-        `;
-      }).join('');
 
-      // Build table rows based on sorted branches
-      const rowsHTML = sortedBranchesForExcel.map(b => {
+        const dayStyle = isWeekend ? weekendHeaderStyle : weekdayHeaderStyle;
+        const weekendIndicator = isWeekend ? (isSaturday ? 'ស' : 'អ') : '';
+
+        setCell(colIndex, 4, dayNum, dayStyle);
+        setCell(colIndex, 5, weekendIndicator, dayStyle);
+      }
+
+      setCell(rateColIndex, 4, "អត្រា Post", mainHeaderStyle);
+      setCell(rateColIndex, 5, "", mainHeaderStyle);
+
+      // Initialize merges list
+      const merges = [
+        { s: { c: 0, r: 0 }, e: { c: rateColIndex, r: 0 } }, // title merge
+        { s: { c: 0, r: 1 }, e: { c: rateColIndex, r: 1 } }, // subtitle merge
+        { s: { c: 0, r: 3 }, e: { c: 8, r: 3 } }, // legend 1
+        { s: { c: 9, r: 3 }, e: { c: 17, r: 3 } }, // legend 2
+        { s: { c: 18, r: 3 }, e: { c: 28, r: 3 } }, // legend 3
+        { s: { c: 0, r: 4 }, e: { c: 0, r: 5 } }, // branch header
+        { s: { c: 1, r: 4 }, e: { c: 1, r: 5 } }, // staff header
+        { s: { c: rateColIndex, r: 4 }, e: { c: rateColIndex, r: 5 } }, // rate header
+      ];
+
+      // Write table rows (Row index 6 onwards)
+      sortedBranchesForExcel.forEach((b, bIdx) => {
+        const rowIndex = 6 + bIdx;
         const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
         let postedCount = 0;
 
-        // Day cell values
-        const dayCellsHTML = dates.map(dateStr => {
+        // Column A: Branch Name
+        setCell(0, rowIndex, `${b.nameKh}\n${b.nameEn}`, {
+          font: { sz: 9.5, bold: true, color: { rgb: '0F172A' } },
+          alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+          border: tableBorder
+        });
+
+        // Column B: Technical Staff Name
+        setCell(1, rowIndex, bStaff, {
+          font: { sz: 9.5, color: { rgb: '334155' } },
+          alignment: { horizontal: 'left', vertical: 'center' },
+          border: tableBorder
+        });
+
+        // Columns C to C+daysInMonth-1: Day cell values
+        dates.forEach((dateStr, dIdx) => {
+          const colIndex = 2 + dIdx;
           const [y, m, dNum] = dateStr.split('-').map(Number);
           const dObj = new Date(y, m - 1, dNum);
           const dayOfWeek = dObj.getDay();
@@ -168,255 +281,132 @@ export default function ExportReportModal({
           const hasReport = !!r;
           const isPosted = hasReport && r.status === 'POSTED';
 
+          let cellVal = "";
+          let fill: any = undefined;
+          let font: any = { sz: 9, color: { rgb: '000000' } };
+
           if (dateStr <= todayStr) {
             if (isWeekend) {
               if (isPosted) {
-                return `<td class="cell-weekend-posted">✔</td>`;
+                cellVal = "✔";
+                fill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'D1FAE5' } };
+                font = { sz: 11, bold: true, color: { rgb: '065F46' } };
+              } else {
+                cellVal = "ស-អ";
+                fill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'F8FAFC' } };
+                font = { sz: 8.5, color: { rgb: '94A3B8' } };
               }
-              return `<td class="cell-weekend">ស-អ</td>`;
+            } else {
+              if (isPosted) {
+                postedCount++;
+                cellVal = "✔";
+                fill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'D1FAE5' } };
+                font = { sz: 11, bold: true, color: { rgb: '065F46' } };
+              } else if (hasReport && r.status === 'NOT_POSTED') {
+                cellVal = "✘";
+                fill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEE2E2' } };
+                font = { sz: 11, bold: true, color: { rgb: '991B1B' } };
+              } else {
+                cellVal = "";
+              }
             }
-
-            if (isPosted) {
-              postedCount++;
-              return `<td class="cell-posted">✔</td>`;
-            } else if (hasReport && r.status === 'NOT_POSTED') {
-              return `<td class="cell-unposted">✘</td>`;
-            }
-            return `<td></td>`;
+          } else {
+            cellVal = "-";
+            font = { sz: 9, color: { rgb: 'CBD5E1' } };
           }
-          
-          return `<td style="color: #cbd5e1; font-size: 9pt;">-</td>`;
-        }).join('');
 
+          setCell(colIndex, rowIndex, cellVal, {
+            font,
+            fill,
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: tableBorder
+          });
+        });
+
+        // Column Rate: Completion Rate
         const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
-        let rateClass = 'rate-low';
+        let fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEE2E2' } };
+        let fontRate = { sz: 9.5, bold: true, color: { rgb: '991B1B' } };
+
         if (rate >= 90) {
-          rateClass = 'rate-high';
+          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'D1FAE5' } };
+          fontRate = { sz: 9.5, bold: true, color: { rgb: '065F46' } };
         } else if (rate >= 60) {
-          rateClass = 'rate-medium';
+          fillRate = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEF3C7' } };
+          fontRate = { sz: 9.5, bold: true, color: { rgb: '92400E' } };
         }
 
-        return `
-          <tr>
-            <td class="branch-name">
-              <div style="font-size: 10pt; font-weight: bold;">${b.nameKh}</div>
-              <div class="branch-en">${b.nameEn}</div>
-            </td>
-            <td class="staff-name">${bStaff}</td>
-            ${dayCellsHTML}
-            <td class="${rateClass}">
-              <div style="font-size: 11pt; font-weight: bold;">${rate}%</div>
-              <div style="font-size: 8pt; font-weight: normal; color: #475569; margin-top: 1px;">
-                (${postedCount}/${totalWorkingDays} ថ្ងៃ)
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+        setCell(rateColIndex, rowIndex, `${rate}%\n(${postedCount}/${totalWorkingDays} ថ្ងៃ)`, {
+          font: fontRate,
+          fill: fillRate,
+          alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+          border: tableBorder
+        });
+      });
 
-      const htmlContent = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"/>
-          <!--[if gte mso 9]>
-          <xml>
-            <x:ExcelWorkbook>
-              <x:ExcelWorksheets>
-                <x:ExcelWorksheet>
-                  <x:Name>Summary Report</x:Name>
-                  <x:WorksheetOptions>
-                    <x:DisplayGridlines/>
-                  </x:WorksheetOptions>
-                </x:ExcelWorksheet>
-              </x:ExcelWorksheets>
-            </x:ExcelWorkbook>
-          </xml>
-          <![endif]-->
-          <style>
-            body {
-              margin: 20px;
-              font-family: 'Khmer OS Siemreap', 'Siemreap', 'Segoe UI', sans-serif;
-            }
-            .title {
-              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
-              color: #0f172a;
-              font-size: 16pt;
-              font-weight: bold;
-              text-align: center;
-              margin-bottom: 5px;
-            }
-            .subtitle {
-              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
-              color: #475569;
-              font-size: 11pt;
-              text-align: center;
-              margin-bottom: 20px;
-            }
-            table {
-              border-collapse: collapse;
-              width: 100%;
-              font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;
-            }
-            th, td {
-              border: 1px solid #cbd5e1;
-              padding: 6px 4px;
-              text-align: center;
-              font-size: 10pt;
-              vertical-align: middle;
-            }
-            th {
-              background-color: #f1f5f9;
-              color: #1e293b;
-              font-weight: bold;
-            }
-            .header-main {
-              background-color: #1e293b;
-              color: #ffffff;
-              font-weight: bold;
-              padding: 10px 6px;
-            }
-            .header-day {
-              min-width: 32px;
-              background-color: #f8fafc;
-              color: #334155;
-            }
-            .header-day-weekend {
-              background-color: #e2e8f0;
-              color: #64748b;
-              font-weight: normal;
-              min-width: 32px;
-            }
-            .branch-name {
-              text-align: left;
-              font-weight: bold;
-              background-color: #ffffff;
-              color: #0f172a;
-              min-width: 170px;
-              padding-left: 8px;
-            }
-            .branch-en {
-              font-size: 7.5pt;
-              color: #64748b;
-              font-weight: normal;
-              margin-top: 2px;
-            }
-            .staff-name {
-              background-color: #ffffff;
-              color: #334155;
-              font-weight: normal;
-              min-width: 110px;
-            }
-            .cell-posted {
-              background-color: #d1fae5;
-              color: #065f46;
-              font-weight: bold;
-              font-size: 11pt;
-            }
-            .cell-unposted {
-              background-color: #fee2e2;
-              color: #991b1b;
-              font-weight: bold;
-              font-size: 11pt;
-            }
-            .cell-weekend {
-              background-color: #f8fafc;
-              color: #94a3b8;
-              font-size: 7.5pt;
-            }
-            .cell-weekend-posted {
-              background-color: #d1fae5;
-              color: #065f46;
-              font-weight: bold;
-              font-size: 11pt;
-            }
-            .rate-high {
-              background-color: #d1fae5;
-              color: #065f46;
-              font-weight: bold;
-              font-size: 10pt;
-              min-width: 85px;
-            }
-            .rate-medium {
-              background-color: #fef3c7;
-              color: #92400e;
-              font-weight: bold;
-              font-size: 10pt;
-              min-width: 85px;
-            }
-            .rate-low {
-              background-color: #fee2e2;
-              color: #991b1b;
-              font-weight: bold;
-              font-size: 10pt;
-              min-width: 85px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="title">របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ</div>
-          <div class="subtitle">ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}</div>
-          
-          <!-- Legend indicators table -->
-          <table style="border: none; margin-bottom: 15px; width: auto; margin-left: 0;">
-            <tr style="border: none;">
-              <td style="border: none; text-align: left; padding: 5px 15px 5px 0; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
-                <span style="border: 1px solid #10b981; background-color: #ecfdf5; color: #10b981; padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-right: 4px;">✓</span> 
-                បានរាយការណ៍ក្នុង Telegram (POSTED)
-              </td>
-              <td style="border: none; text-align: left; padding: 5px 15px; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
-                <span style="border: 1px solid #ef4444; background-color: #fef2f2; color: #ef4444; padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-right: 4px;">✗</span> 
-                អត់បានរាយការណ៍ (NOT POSTED)
-              </td>
-              <td style="border: none; text-align: left; padding: 5px 15px; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 10pt;">
-                <span style="border: 1px solid #94a3b8; background-color: #f8fafc; color: #94a3b8; padding: 1px 8px; border-radius: 3px; font-weight: bold; margin-right: 4px;">&nbsp;&nbsp;</span> 
-                មិនទាន់មានទិន្នន័យ (No Data / Out of range)
-              </td>
-            </tr>
-          </table>
+      // Write Signature and Date Table
+      const footerRowStart = 6 + sortedBranchesForExcel.length + 2;
 
-          <table>
-            <thead>
-              <tr>
-                <th class="header-main" style="text-align: left;">សាខាខេត្ត/ខណ្ឌ (Branch Name)</th>
-                <th class="header-main">មន្ត្រីបង្គោល (Technical Staff)</th>
-                ${dayHeadersHTML}
-                <th class="header-main">អត្រា Post</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHTML}
-            </tbody>
-          </table>
+      // "ធ្វើនៅភ្នំពេញ, ថ្ងៃទី..." at footerRowStart
+      const footerText = `ធ្វើនៅភ្នំពេញ, ថ្ងៃទី ${khmerDay} ខែ ${khmerMonthNameToday} ឆ្នាំ ${khmerYear}`;
+      const signColStart = Math.max(0, rateColIndex - 8);
+      
+      merges.push({ s: { c: signColStart, r: footerRowStart }, e: { c: rateColIndex, r: footerRowStart } });
+      setCell(signColStart, footerRowStart, footerText, {
+        font: { sz: 10, italic: true, color: { rgb: '475569' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
 
-          <!-- Signature and date table -->
-          <table style="border: none; margin-top: 30px; width: 100%;">
-            <tr style="border: none;">
-              <td style="border: none; width: 60%;"></td>
-              <td style="border: none; width: 40%; text-align: center; font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif;">
-                <div style="font-size: 11pt; font-style: italic; color: #475569; margin-bottom: 5px;">
-                  ធ្វើនៅភ្នំពេញ, ថ្ងៃទី ${khmerDay} ខែ ${khmerMonthNameToday} ឆ្នាំ ${khmerYear}
-                </div>
-                <div style="font-size: 11pt; font-weight: bold; color: #1e293b; margin-bottom: 60px;">
-                  អ្នករៀបចំរបាយការណ៍
-                </div>
-                <div style="font-size: 10pt; color: #64748b;">
-                  ......................................................
-                </div>
-              </td>
-            </tr>
-          </table>
-        </body>
-        </html>
-      `;
+      // "អ្នករៀបចំរបាយការណ៍" at footerRowStart + 1
+      merges.push({ s: { c: signColStart, r: footerRowStart + 1 }, e: { c: rateColIndex, r: footerRowStart + 1 } });
+      setCell(signColStart, footerRowStart + 1, "អ្នករៀបចំរបាយការណ៍", {
+        font: { sz: 11, bold: true, color: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
 
-      // Khmer Unicode Safe download stream creation
-      const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', `Daily_Equipment_Report_Summary_${selectedMonth}.xls`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // "......................................................" at footerRowStart + 4
+      merges.push({ s: { c: signColStart, r: footerRowStart + 4 }, e: { c: rateColIndex, r: footerRowStart + 4 } });
+      setCell(signColStart, footerRowStart + 4, "......................................................", {
+        font: { sz: 10, color: { rgb: '64748B' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+
+      // Set worksheets properties
+      ws['!merges'] = merges;
+      
+      // Column Widths
+      const colWidths = [
+        { wch: 25 }, // Column A: Branch Name
+        { wch: 18 }, // Column B: Staff Name
+      ];
+      for (let i = 0; i < daysInMonth; i++) {
+        colWidths.push({ wch: 4.8 }); // Days columns
+      }
+      colWidths.push({ wch: 16 }); // Rate Column
+      ws['!cols'] = colWidths;
+
+      // Row Heights
+      const rowHeights = [
+        { hpt: 35 }, // Row 1 (Title)
+        { hpt: 22 }, // Row 2 (Subtitle)
+        { hpt: 15 }, // Row 3 (Spacer)
+        { hpt: 20 }, // Row 4 (Legend)
+        { hpt: 22 }, // Row 5 (Header Row 1)
+        { hpt: 18 }, // Row 6 (Header Row 2)
+      ];
+      for (let i = 0; i < sortedBranchesForExcel.length; i++) {
+        rowHeights.push({ hpt: 28 }); // Branch rows
+      }
+      ws['!rows'] = rowHeights;
+
+      // Define worksheet range
+      const lastColLetter = XLSX.utils.encode_col(rateColIndex);
+      const lastRowNumber = footerRowStart + 6;
+      ws['!ref'] = `A1:${lastColLetter}${lastRowNumber}`;
+
+      // Append sheet to workbook and save as XLSX
+      XLSX.utils.book_append_sheet(wb, ws, "របាយការណ៍សង្ខេប");
+      XLSX.writeFile(wb, `Daily_Equipment_Report_Summary_${selectedMonth}.xlsx`);
     } catch (e) {
       alert('កំហុសពេលទាញយក Excel៖ ' + String(e));
     }
