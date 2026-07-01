@@ -464,6 +464,24 @@ export default function App() {
   };
 
   /**
+   * Month selection change handler to sync the selectedDate
+   */
+  const handleMonthChange = (newMonth: string) => {
+    if (!newMonth) return;
+    setSelectedMonth(newMonth);
+    
+    const today = new Date();
+    const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (newMonth === currentYearMonth) {
+      const dayStr = String(today.getDate()).padStart(2, '0');
+      setSelectedDate(`${newMonth}-${dayStr}`);
+    } else {
+      setSelectedDate(`${newMonth}-01`);
+    }
+  };
+
+  /**
    * Date change arithmetic (previous/next day)
    */
   const handleDayShift = (amount: number) => {
@@ -653,7 +671,7 @@ export default function App() {
             <input
               type="month"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              onChange={(e) => handleMonthChange(e.target.value)}
               className="bg-white border border-slate-200 rounded-xl px-3 py-1 text-xs font-bold font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
             />
           </div>
