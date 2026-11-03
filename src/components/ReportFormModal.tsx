@@ -34,7 +34,6 @@ export default function ReportFormModal({
   const [checkedEquipment, setCheckedEquipment] = useState<string[]>(EQUIPMENT_LIST.map(e => e.id));
   const [reporterName, setReporterName] = useState('');
   const [postTime, setPostTime] = useState('');
-  const [note, setNote] = useState('');
   const [remark, setRemark] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,7 +55,6 @@ export default function ReportFormModal({
       setCheckedEquipment(existing.equipmentChecked);
       setReporterName(existing.reporterName || assignedStaff);
       setPostTime(existing.telegramPostTime);
-      setNote(existing.note);
       setRemark(existing.remark || '');
     } else {
       // Set default values
@@ -70,7 +68,6 @@ export default function ReportFormModal({
       const currentHr = String(now.getHours()).padStart(2, '0');
       const currentMn = String(now.getMinutes()).padStart(2, '0');
       setPostTime(`${currentHr}:${currentMn}`);
-      setNote('');
       setRemark('');
     }
   }, [isOpen, selectedBranchId, selectedDate, reports, staff, activeBranch]);
@@ -100,7 +97,6 @@ export default function ReportFormModal({
       equipmentChecked: status === 'POSTED' ? checkedEquipment : [],
       reporterName: reporterName.trim(),
       telegramPostTime: status === 'POSTED' ? postTime : '',
-      note: note.trim(),
       remark: remark.trim(),
       loggedAt: new Date().toISOString(),
     };
@@ -302,17 +298,6 @@ export default function ReportFormModal({
                 onChange={(e) => setRemark(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm text-red-600 font-bold placeholder:font-normal placeholder:text-slate-400 shadow-sm"
                 placeholder="ជ្រើសរើសប៊ូតុងខាងលើ ឬវាយបញ្ចូលផ្ទាល់ (ឧ. ច្បាប់, បេសកកម្ម)..."
-              />
-            </div>
-
-            {/* Special note / comment */}
-            <div>
-              <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">ចំណាំ / ព័ត៌មានលម្អិតបន្ថែម (Note / Comment)</label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm h-16 min-h-[60px] max-h-[120px]"
-                placeholder="បញ្ចូលចំណាំផ្សេងៗ (បើមាន)... ឧ. ម៉ាស៊ីនព្រីន Bizhub 458e ខូចកាត ឬដំណើរការល្អទាំងអស់"
               />
             </div>
           </div>

@@ -307,7 +307,6 @@ export async function pushReportsToSupabase(reportsList: DailyReport[]): Promise
       equipment_checked: r.equipmentChecked,
       reporter_name: r.reporterName,
       telegram_post_time: r.telegramPostTime,
-      note: r.note,
       remark: r.remark || '',
       logged_at: r.loggedAt
     }));
@@ -324,7 +323,7 @@ export async function pushReportsToSupabase(reportsList: DailyReport[]): Promise
         equipment_checked: r.equipmentChecked,
         reporter_name: r.reporterName,
         telegram_post_time: r.telegramPostTime,
-        note: r.remark ? `[REMARK:${r.remark}] ${r.note || ''}`.trim() : r.note,
+        note: r.remark ? `[REMARK:${r.remark}]` : '',
         logged_at: r.loggedAt
       }));
       const retryRes = await client

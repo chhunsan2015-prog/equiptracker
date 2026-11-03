@@ -426,7 +426,6 @@ export default function App() {
             equipment_checked: newReport.equipmentChecked,
             reporter_name: newReport.reporterName,
             telegram_post_time: newReport.telegramPostTime,
-            note: newReport.note,
             remark: newReport.remark || '',
             logged_at: newReport.loggedAt
           };
@@ -438,9 +437,7 @@ export default function App() {
           // Fallback if the user's Supabase table doesn't have the 'remark' column created yet
           if (error && error.message && error.message.includes('remark')) {
             const { remark: _omitted, ...fallbackRow } = row;
-            fallbackRow.note = newReport.remark
-              ? `[REMARK:${newReport.remark}] ${newReport.note || ''}`.trim()
-              : newReport.note;
+            fallbackRow.note = newReport.remark ? `[REMARK:${newReport.remark}]` : '';
             const retryRes = await supabase
               .from('daily_reports')
               .upsert([fallbackRow], { onConflict: 'date,branch_id' });

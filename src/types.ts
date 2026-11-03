@@ -33,7 +33,7 @@ export interface DailyReport {
   equipmentChecked: string[]; // List of equipment IDs
   reporterName: string;
   telegramPostTime: string; // e.g. "09:30"
-  note: string;
+  note?: string;
   remark?: string; // e.g. "ច្បាប់", "សុំច្បាប់", "បេសកកម្ម"
   loggedAt: string; // ISO string
 }
