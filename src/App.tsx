@@ -130,11 +130,12 @@ export default function App() {
           setStaff(fetchedStaff);
           saveLocalStaff(fetchedStaff);
           
-          setSyncNotification({
-            message: 'ទិន្នន័យត្រូវបានទាញយក និងសមកាលកម្មស្វ័យប្រវត្តិពី Supabase!',
-            type: 'success'
-          });
-          setTimeout(() => setSyncNotification(null), 3500);
+          // បិទការបង្ហាញសារជូនដំណឹងជោគជ័យ (Silent background sync)
+          // setSyncNotification({
+          //   message: 'ទិន្នន័យត្រូវបានទាញយក និងសមកាលកម្មស្វ័យប្រវត្តិពី Supabase!',
+          //   type: 'success'
+          // });
+          // setTimeout(() => setSyncNotification(null), 3500);
         } catch (err) {
           console.error('Failed to auto-fetch initial data from Supabase:', err);
           setSyncNotification({
@@ -375,11 +376,12 @@ export default function App() {
             throw error;
           }
 
-          setSyncNotification({
-            message: 'រក្សាទុកព័ត៌មានមន្ត្រីបង្គោលទៅកាន់ Supabase បានជោគជ័យ!',
-            type: 'success'
-          });
-          setTimeout(() => setSyncNotification(null), 3500);
+          // បិទការបង្ហាញសារជូនដំណឹងជោគជ័យ (Silent background save)
+          // setSyncNotification({
+          //   message: 'រក្សាទុកព័ត៌មានមន្ត្រីបង្គោលទៅកាន់ Supabase បានជោគជ័យ!',
+          //   type: 'success'
+          // });
+          // setTimeout(() => setSyncNotification(null), 3500);
         }
       }
     } catch (err) {
@@ -448,11 +450,12 @@ export default function App() {
             throw error;
           }
 
-          setSyncNotification({
-            message: 'បញ្ជូនរបាយការណ៍ប្រចាំថ្ងៃទៅ Supabase បានជោគជ័យ!',
-            type: 'success'
-          });
-          setTimeout(() => setSyncNotification(null), 3500);
+          // បិទការបង្ហាញសារជូនដំណឹងជោគជ័យ (Silent background submit)
+          // setSyncNotification({
+          //   message: 'បញ្ជូនរបាយការណ៍ប្រចាំថ្ងៃទៅ Supabase បានជោគជ័យ!',
+          //   type: 'success'
+          // });
+          // setTimeout(() => setSyncNotification(null), 3500);
         }
       }
     } catch (err) {
