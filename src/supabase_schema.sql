@@ -48,11 +48,15 @@ CREATE TABLE daily_reports (
     reporter_name VARCHAR(100),
     telegram_post_time VARCHAR(50),
     note TEXT,
+    remark TEXT,
     logged_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     
     -- Constraint to prevent multiple reports per branch on the same day
     CONSTRAINT unique_daily_branch_report UNIQUE (date, branch_id)
 );
+
+-- ប្រសិនបើតារាង daily_reports មានរួចហើយ សូមដំណើរការកូដខាងក្រោមក្នុង Supabase SQL Editor៖
+-- ALTER TABLE daily_reports ADD COLUMN IF NOT EXISTS remark TEXT;
 
 COMMENT ON TABLE daily_reports IS 'តារាងរក្សាទុកទិន្នន័យនៃការរាយការណ៍គ្រប់គ្រងឧបករណ៍បច្ចេកវិទ្យាព័ត៌មានប្រចាំថ្ងៃ';
 

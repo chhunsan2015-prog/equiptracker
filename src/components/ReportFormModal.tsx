@@ -35,6 +35,7 @@ export default function ReportFormModal({
   const [reporterName, setReporterName] = useState('');
   const [postTime, setPostTime] = useState('');
   const [note, setNote] = useState('');
+  const [remark, setRemark] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeBranch = branches.find(b => b.id === selectedBranchId);
@@ -56,6 +57,7 @@ export default function ReportFormModal({
       setReporterName(existing.reporterName || assignedStaff);
       setPostTime(existing.telegramPostTime);
       setNote(existing.note);
+      setRemark(existing.remark || '');
     } else {
       // Set default values
       setStatus('POSTED');
@@ -69,6 +71,7 @@ export default function ReportFormModal({
       const currentMn = String(now.getMinutes()).padStart(2, '0');
       setPostTime(`${currentHr}:${currentMn}`);
       setNote('');
+      setRemark('');
     }
   }, [isOpen, selectedBranchId, selectedDate, reports, staff, activeBranch]);
 
@@ -98,6 +101,7 @@ export default function ReportFormModal({
       reporterName: reporterName.trim(),
       telegramPostTime: status === 'POSTED' ? postTime : '',
       note: note.trim(),
+      remark: remark.trim(),
       loggedAt: new Date().toISOString(),
     };
 
@@ -260,6 +264,46 @@ export default function ReportFormModal({
                 </div>
               </>
             )}
+
+            {/* ១. ជម្រើស "ចំណាំ" ជាទម្រង់ប៊ូតុងចុចរហ័ស (Quick Select Badges) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">
+                ចំណាំលើតារាង (Remark Quick Select)
+              </label>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {[
+                  { label: 'ធម្មតា', value: '' },
+                  { label: 'ច្បាប់', value: 'ច្បាប់' },
+                  { label: 'សុំច្បាប់', value: 'សុំច្បាប់' },
+                  { label: 'បេសកកម្ម', value: 'បេសកកម្ម' },
+                ].map((badge) => {
+                  const isSelected = remark === badge.value;
+                  return (
+                    <button
+                      key={badge.label}
+                      type="button"
+                      onClick={() => setRemark(badge.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                        isSelected
+                          ? badge.value === ''
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                            : 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {badge.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <input
+                type="text"
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm text-red-600 font-bold placeholder:font-normal placeholder:text-slate-400 shadow-sm"
+                placeholder="ជ្រើសរើសប៊ូតុងខាងលើ ឬវាយបញ្ចូលផ្ទាល់ (ឧ. ច្បាប់, បេសកកម្ម)..."
+              />
+            </div>
 
             {/* Special note / comment */}
             <div>

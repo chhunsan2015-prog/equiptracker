@@ -419,7 +419,7 @@ export default function App() {
       if (supabaseConfig.isConfigured) {
         const supabase = getSupabaseClient();
         if (supabase) {
-          const row = {
+          const row: Record<string, any> = {
             date: newReport.date,
             branch_id: newReport.branchId,
             status: newReport.status,
@@ -427,12 +427,25 @@ export default function App() {
             reporter_name: newReport.reporterName,
             telegram_post_time: newReport.telegramPostTime,
             note: newReport.note,
+            remark: newReport.remark || '',
             logged_at: newReport.loggedAt
           };
 
-          const { error } = await supabase
+          let { error } = await supabase
             .from('daily_reports')
             .upsert([row], { onConflict: 'date,branch_id' });
+
+          // Fallback if the user's Supabase table doesn't have the 'remark' column created yet
+          if (error && error.message && error.message.includes('remark')) {
+            const { remark: _omitted, ...fallbackRow } = row;
+            fallbackRow.note = newReport.remark
+              ? `[REMARK:${newReport.remark}] ${newReport.note || ''}`.trim()
+              : newReport.note;
+            const retryRes = await supabase
+              .from('daily_reports')
+              .upsert([fallbackRow], { onConflict: 'date,branch_id' });
+            error = retryRes.error;
+          }
 
           if (error) {
             throw error;

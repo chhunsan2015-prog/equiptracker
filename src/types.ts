@@ -34,6 +34,7 @@ export interface DailyReport {
   reporterName: string;
   telegramPostTime: string; // e.g. "09:30"
   note: string;
+  remark?: string; // e.g. "ច្បាប់", "សុំច្បាប់", "បេសកកម្ម"
   loggedAt: string; // ISO string
 }
 

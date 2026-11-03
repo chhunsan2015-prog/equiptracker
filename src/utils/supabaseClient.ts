@@ -239,7 +239,7 @@ export async function fetchReportsFromSupabase(): Promise<DailyReport[]> {
   while (hasMore) {
     const { data, error } = await client
       .from('daily_reports')
-      .select('date, branch_id, status, equipment_checked, reporter_name, telegram_post_time, note, logged_at')
+      .select('*')
       .order('date', { ascending: false })
       .range(from, from + limit - 1);
 
@@ -248,16 +248,26 @@ export async function fetchReportsFromSupabase(): Promise<DailyReport[]> {
     }
 
     if (data && data.length > 0) {
-      const mapped: DailyReport[] = data.map((row: any) => ({
-        date: row.date,
-        branchId: row.branch_id,
-        status: row.status as 'POSTED' | 'NOT_POSTED',
-        equipmentChecked: row.equipment_checked || [],
-        reporterName: row.reporter_name || '',
-        telegramPostTime: row.telegram_post_time || '',
-        note: row.note || '',
-        loggedAt: row.logged_at || new Date().toISOString(),
-      }));
+      const mapped: DailyReport[] = data.map((row: any) => {
+        let noteVal = row.note || '';
+        let remarkVal = row.remark || '';
+        const match = noteVal.match(/^\[REMARK:(.*?)\]\s*(.*)$/s);
+        if (match) {
+          if (!remarkVal) remarkVal = match[1];
+          noteVal = match[2] || '';
+        }
+        return {
+          date: row.date,
+          branchId: row.branch_id,
+          status: row.status as 'POSTED' | 'NOT_POSTED',
+          equipmentChecked: row.equipment_checked || [],
+          reporterName: row.reporter_name || '',
+          telegramPostTime: row.telegram_post_time || '',
+          note: noteVal,
+          remark: remarkVal,
+          loggedAt: row.logged_at || new Date().toISOString(),
+        };
+      });
 
       allReports = [...allReports, ...mapped];
 
@@ -298,12 +308,30 @@ export async function pushReportsToSupabase(reportsList: DailyReport[]): Promise
       reporter_name: r.reporterName,
       telegram_post_time: r.telegramPostTime,
       note: r.note,
+      remark: r.remark || '',
       logged_at: r.loggedAt
     }));
 
-    const { error } = await client
+    let { error } = await client
       .from('daily_reports')
       .upsert(rows, { onConflict: 'date,branch_id' });
+
+    if (error && error.message && error.message.includes('remark')) {
+      const fallbackRows = chunk.map(r => ({
+        date: r.date,
+        branch_id: r.branchId,
+        status: r.status,
+        equipment_checked: r.equipmentChecked,
+        reporter_name: r.reporterName,
+        telegram_post_time: r.telegramPostTime,
+        note: r.remark ? `[REMARK:${r.remark}] ${r.note || ''}`.trim() : r.note,
+        logged_at: r.loggedAt
+      }));
+      const retryRes = await client
+        .from('daily_reports')
+        .upsert(fallbackRows, { onConflict: 'date,branch_id' });
+      error = retryRes.error;
+    }
 
     if (error) {
       throw new Error(`កំហុសបញ្ជូនទិន្នន័យរបាយការណ៍ (Chunk ${i / chunkSize + 1})៖ ${error.message}`);

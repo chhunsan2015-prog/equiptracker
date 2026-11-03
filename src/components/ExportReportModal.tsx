@@ -150,6 +150,7 @@ export default function ExportReportModal({
       };
 
       const rateColIndex = 2 + daysInMonth;
+      const remarkColIndex = rateColIndex + 1;
 
       // Title & Subtitle Row
       setCell(0, 0, "របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
@@ -237,16 +238,20 @@ export default function ExportReportModal({
       setCell(rateColIndex, 4, "អត្រា Post", mainHeaderStyle);
       setCell(rateColIndex, 5, "", mainHeaderStyle);
 
+      setCell(remarkColIndex, 4, "ចំណាំ", mainHeaderStyle);
+      setCell(remarkColIndex, 5, "", mainHeaderStyle);
+
       // Initialize merges list
       const merges = [
-        { s: { c: 0, r: 0 }, e: { c: rateColIndex, r: 0 } }, // title merge
-        { s: { c: 0, r: 1 }, e: { c: rateColIndex, r: 1 } }, // subtitle merge
+        { s: { c: 0, r: 0 }, e: { c: remarkColIndex, r: 0 } }, // title merge
+        { s: { c: 0, r: 1 }, e: { c: remarkColIndex, r: 1 } }, // subtitle merge
         { s: { c: 0, r: 3 }, e: { c: 8, r: 3 } }, // legend 1
         { s: { c: 9, r: 3 }, e: { c: 17, r: 3 } }, // legend 2
         { s: { c: 18, r: 3 }, e: { c: 28, r: 3 } }, // legend 3
         { s: { c: 0, r: 4 }, e: { c: 0, r: 5 } }, // branch header
         { s: { c: 1, r: 4 }, e: { c: 1, r: 5 } }, // staff header
         { s: { c: rateColIndex, r: 4 }, e: { c: rateColIndex, r: 5 } }, // rate header
+        { s: { c: remarkColIndex, r: 4 }, e: { c: remarkColIndex, r: 5 } }, // remark header
       ];
 
       // Write table rows (Row index 6 onwards)
@@ -254,6 +259,7 @@ export default function ExportReportModal({
         const rowIndex = 6 + bIdx;
         const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
         let postedCount = 0;
+        const branchRemarks: string[] = [];
 
         // Column A: Branch Name
         setCell(0, rowIndex, b.nameKh, {
@@ -280,12 +286,25 @@ export default function ExportReportModal({
           const r = reportLookup[`${dateStr}_${b.id}`];
           const hasReport = !!r;
           const isPosted = hasReport && r.status === 'POSTED';
+          const hasRemark = Boolean(
+            r?.remark &&
+            r.remark.trim() !== '' &&
+            r.remark.trim() !== 'ធម្មតា'
+          );
 
           let cellVal = "";
           let fill: any = undefined;
           let font: any = { sz: 9, color: { rgb: '000000' } };
 
-          if (dateStr <= todayStr) {
+          if (hasRemark) {
+            branchRemarks.push(`${r!.remark!.trim()} (ទី${dNum})`);
+            if (dateStr <= todayStr && !isWeekend && isPosted) {
+              postedCount++;
+            }
+            cellVal = r!.remark!.trim();
+            fill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FEE2E2' } };
+            font = { sz: 9, bold: true, color: { rgb: 'DC2626' } };
+          } else if (dateStr <= todayStr) {
             if (isWeekend) {
               if (isPosted) {
                 cellVal = "✔";
@@ -342,6 +361,14 @@ export default function ExportReportModal({
           alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
           border: tableBorder
         });
+
+        // Column Remark: ចំណាំ
+        const remarkSummary = branchRemarks.join(', ');
+        setCell(remarkColIndex, rowIndex, remarkSummary, {
+          font: { sz: 9.5, bold: Boolean(remarkSummary), color: { rgb: remarkSummary ? 'DC2626' : '334155' } },
+          alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+          border: tableBorder
+        });
       });
 
       // Write Signature and Date Table
@@ -349,23 +376,23 @@ export default function ExportReportModal({
 
       // "ធ្វើនៅភ្នំពេញ, ថ្ងៃទី..." at footerRowStart
       const footerText = `ធ្វើនៅភ្នំពេញ, ថ្ងៃទី ${khmerDay} ខែ ${khmerMonthNameToday} ឆ្នាំ ${khmerYear}`;
-      const signColStart = Math.max(0, rateColIndex - 8);
+      const signColStart = Math.max(0, remarkColIndex - 8);
       
-      merges.push({ s: { c: signColStart, r: footerRowStart }, e: { c: rateColIndex, r: footerRowStart } });
+      merges.push({ s: { c: signColStart, r: footerRowStart }, e: { c: remarkColIndex, r: footerRowStart } });
       setCell(signColStart, footerRowStart, footerText, {
         font: { sz: 10, italic: true, color: { rgb: '475569' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       // "អ្នករៀបចំរបាយការណ៍" at footerRowStart + 1
-      merges.push({ s: { c: signColStart, r: footerRowStart + 1 }, e: { c: rateColIndex, r: footerRowStart + 1 } });
+      merges.push({ s: { c: signColStart, r: footerRowStart + 1 }, e: { c: remarkColIndex, r: footerRowStart + 1 } });
       setCell(signColStart, footerRowStart + 1, "អ្នករៀបចំរបាយការណ៍", {
         font: { sz: 11, bold: true, color: { rgb: '1E293B' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       // "......................................................" at footerRowStart + 4
-      merges.push({ s: { c: signColStart, r: footerRowStart + 4 }, e: { c: rateColIndex, r: footerRowStart + 4 } });
+      merges.push({ s: { c: signColStart, r: footerRowStart + 4 }, e: { c: remarkColIndex, r: footerRowStart + 4 } });
       setCell(signColStart, footerRowStart + 4, "......................................................", {
         font: { sz: 10, color: { rgb: '64748B' } },
         alignment: { horizontal: 'center', vertical: 'center' }
@@ -383,6 +410,7 @@ export default function ExportReportModal({
         colWidths.push({ wch: 4.8 }); // Days columns
       }
       colWidths.push({ wch: 16 }); // Rate Column
+      colWidths.push({ wch: 18 }); // Remark Column (ចំណាំ)
       ws['!cols'] = colWidths;
 
       // Row Heights
@@ -400,7 +428,7 @@ export default function ExportReportModal({
       ws['!rows'] = rowHeights;
 
       // Define worksheet range
-      const lastColLetter = XLSX.utils.encode_col(rateColIndex);
+      const lastColLetter = XLSX.utils.encode_col(remarkColIndex);
       const lastRowNumber = footerRowStart + 6;
       ws['!ref'] = `A1:${lastColLetter}${lastRowNumber}`;
 

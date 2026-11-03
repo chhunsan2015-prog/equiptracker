@@ -271,13 +271,25 @@ export default function ReportGrid({
                       const dObj = new Date(y, m - 1, dNum);
                       const dayOfWeek = dObj.getDay();
                       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                      const hasRemark = Boolean(
+                        report?.remark &&
+                        report.remark.trim() !== '' &&
+                        report.remark.trim() !== 'ធម្មតា'
+                      );
 
                       let cellClass = isWeekend 
                         ? 'bg-slate-50 hover:bg-emerald-50/40 cursor-pointer text-slate-300/40'
                         : 'bg-white hover:bg-emerald-50/40 cursor-pointer text-slate-300';
                       let icon = null;
 
-                      if (report) {
+                      if (hasRemark) {
+                        cellClass = 'bg-rose-50 hover:bg-rose-100/70 text-red-600 border border-rose-100 cursor-pointer';
+                        icon = (
+                          <span className="text-[9px] font-bold text-red-600 leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-[38px] block">
+                            {report!.remark!.trim()}
+                          </span>
+                        );
+                      } else if (report) {
                         if (report.status === 'POSTED') {
                           cellClass = 'bg-emerald-50 hover:bg-emerald-100/70 text-emerald-600 border border-emerald-100 cursor-pointer';
                           icon = <Check className="w-3.5 h-3.5 mx-auto stroke-[2.5]" />;
@@ -285,6 +297,8 @@ export default function ReportGrid({
                           cellClass = 'bg-rose-50 hover:bg-rose-100/70 text-rose-600 border border-rose-100 cursor-pointer';
                           icon = <X className="w-3.5 h-3.5 mx-auto stroke-[2.5]" />;
                         }
+                      } else if (isWeekend && dateStr <= todayStr) {
+                        icon = <span className="text-[9px] text-slate-400 font-medium">ស-អ</span>;
                       }
 
                       const cellId = `cell-${branch.id}-${dateStr}`;
@@ -294,8 +308,8 @@ export default function ReportGrid({
                           key={dateStr}
                           id={cellId}
                           onClick={() => onCellClick(branch.id, dateStr)}
-                          className={`text-center p-1.5 transition-all outline-none border-r border-slate-50 font-medium select-none ${cellClass}`}
-                          title={`${branch.nameKh} - ${dateStr}${isWeekend ? ' (ចុងសប្តាហ៍ - មិនរាប់បញ្ចូល)' : ''} ${report ? `(${report.status === 'POSTED' ? 'បាន Post' : 'អត់បាន Post'}: ${report.reporterName || 'គ្មានឈ្មោះ'})` : '(ចុចដើម្បីបន្ថែមរាយការណ៍)'}`}
+                          className={`text-center p-1 transition-all outline-none border-r border-slate-50 font-medium select-none ${cellClass}`}
+                          title={`${branch.nameKh} - ${dateStr}${isWeekend ? ' (ចុងសប្តាហ៍ - មិនរាប់បញ្ចូល)' : ''} ${report ? `(${report.status === 'POSTED' ? 'បាន Post' : 'អត់បាន Post'}: ${report.reporterName || 'គ្មានឈ្មោះ'}${hasRemark ? ` | ចំណាំ៖ ${report.remark}` : ''})` : '(ចុចដើម្បីបន្ថែមរាយការណ៍)'}`}
                         >
                           <div className="min-h-[22px] flex items-center justify-center">
                             {icon}
