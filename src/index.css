@@ -7,6 +7,17 @@
 
 body {
   font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+table,
+th,
+td {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -17,4 +28,5 @@ textarea,
 .font-mono {
   font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif !important;
 }
+
 
