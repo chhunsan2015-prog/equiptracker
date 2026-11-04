@@ -55,7 +55,10 @@ export default function ReportFormModal({
       setCheckedEquipment(existing.equipmentChecked);
       setReporterName(existing.reporterName || assignedStaff);
       setPostTime(existing.telegramPostTime);
-      setRemark(existing.remark || '');
+      const existingRemark = (existing.remark || existing.note || '')
+        .replace(/^\[REMARK:(.*?)\]\s*/s, '$1')
+        .trim();
+      setRemark(existingRemark === 'ធម្មតា' ? '' : existingRemark);
     } else {
       // Set default values
       setStatus('POSTED');

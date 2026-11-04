@@ -271,11 +271,10 @@ export default function ReportGrid({
                       const dObj = new Date(y, m - 1, dNum);
                       const dayOfWeek = dObj.getDay();
                       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                      const hasRemark = Boolean(
-                        report?.remark &&
-                        report.remark.trim() !== '' &&
-                        report.remark.trim() !== 'ធម្មតា'
-                      );
+                      const remarkText = (report?.remark || report?.note || '')
+                        .replace(/^\[REMARK:(.*?)\]\s*/s, '$1')
+                        .trim();
+                      const hasRemark = remarkText !== '' && remarkText !== 'ធម្មតា';
 
                       let cellClass = isWeekend 
                         ? 'bg-slate-50 hover:bg-emerald-50/40 cursor-pointer text-slate-300/40'
@@ -286,7 +285,7 @@ export default function ReportGrid({
                         cellClass = 'bg-rose-50 hover:bg-rose-100/70 text-red-600 border border-rose-100 cursor-pointer';
                         icon = (
                           <span className="text-[9px] font-bold text-red-600 leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-[38px] block">
-                            {report!.remark!.trim()}
+                            {remarkText}
                           </span>
                         );
                       } else if (report) {

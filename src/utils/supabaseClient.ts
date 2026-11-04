@@ -255,6 +255,8 @@ export async function fetchReportsFromSupabase(): Promise<DailyReport[]> {
         if (match) {
           if (!remarkVal) remarkVal = match[1];
           noteVal = match[2] || '';
+        } else if (!remarkVal && noteVal) {
+          remarkVal = noteVal;
         }
         return {
           date: row.date,
