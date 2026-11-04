@@ -877,16 +877,21 @@ export default function ExportReportModal({
                 display: none !important;
               }
               #printable-monthly-report {
-                display: block !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                padding-top: 0.12in !important;
-                padding-bottom: 0.1in !important;
+                min-height: 1740px !important;
+                height: 1740px !important;
+                max-height: 1750px !important;
+                padding-top: 22px !important;
+                padding-bottom: 20px !important;
                 box-sizing: border-box !important;
                 background: #ffffff !important;
                 font-family: "Khmer OS Siemreap", "Kantumruy Pro", sans-serif !important;
-                font-size: 8px !important;
-                line-height: 1.2 !important;
+                font-size: 9px !important;
+                line-height: 1.25 !important;
                 zoom: 0.62;
                 transform: none !important;
                 page-break-inside: avoid !important;
@@ -894,9 +899,17 @@ export default function ExportReportModal({
                 page-break-after: avoid !important;
                 break-after: avoid !important;
               }
+              #printable-monthly-report .print-table-container {
+                flex: 1 1 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+              }
               #printable-monthly-report table {
+                flex: 1 1 auto !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                height: 100% !important;
                 border-collapse: collapse !important;
                 table-layout: fixed !important;
                 page-break-inside: avoid !important;
@@ -907,23 +920,42 @@ export default function ExportReportModal({
               #printable-monthly-report th {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                vertical-align: middle !important;
+              }
+              #printable-monthly-report thead th {
+                padding-top: 6px !important;
+                padding-bottom: 6px !important;
+              }
+              #printable-monthly-report tbody tr {
+                height: 41px !important;
+              }
+              #printable-monthly-report tbody td {
+                padding: 8px 1px !important;
               }
               #printable-monthly-report .print-col-branch {
-                width: 98px !important;
+                width: 104px !important;
+                padding-left: 4px !important;
+                padding-right: 4px !important;
               }
               #printable-monthly-report .print-col-staff {
-                width: 98px !important;
+                width: 102px !important;
+                padding-left: 4px !important;
+                padding-right: 4px !important;
               }
               #printable-monthly-report .print-col-rate {
-                width: 88px !important;
+                width: 92px !important;
+                padding-left: 3px !important;
+                padding-right: 3px !important;
               }
               #printable-monthly-report .print-day-col {
-                padding: 2px 0.5px !important;
-                font-size: 7.5px !important;
-                line-height: 1.1 !important;
+                padding: 8px 0.5px !important;
+                font-size: 8.5px !important;
+                line-height: 1.15 !important;
                 overflow: hidden !important;
               }
               #printable-monthly-report .print-footer-block {
+                margin-top: auto !important;
+                padding-top: 18px !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
@@ -931,178 +963,180 @@ export default function ExportReportModal({
           `}</style>
 
           {/* Top Official GDT Header (Matching Excel Layout: Left shifted down & centered, Center Logo + Title, Right at top & centered) */}
-          <div className="grid grid-cols-3 items-start mb-1">
+          <div className="grid grid-cols-3 items-start mb-2">
             {/* Left Block: Shifted down ~2 rows & center-aligned like Excel A3:D5 */}
-            <div className="pt-6 flex justify-start">
-              <div className="text-center text-[10px] leading-relaxed min-w-[210px]">
-                <div className="font-bold text-slate-900 text-[10.5px]">អគ្គនាយកដ្ឋានពន្ធដារ</div>
-                <div className="font-bold underline text-slate-900 text-[10px]">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
-                <div className="text-slate-700 text-[9.5px]">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
+            <div className="pt-7 flex justify-start">
+              <div className="text-center text-[11px] leading-relaxed min-w-[230px]">
+                <div className="font-bold text-slate-900 text-[12px]">អគ្គនាយកដ្ឋានពន្ធដារ</div>
+                <div className="font-bold underline text-slate-900 text-[11.5px]">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
+                <div className="text-slate-700 text-[11px]">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
               </div>
             </div>
 
             {/* Center Block: GDT Logo + Report Title & Subtitle directly centered underneath */}
             <div className="flex flex-col items-center justify-start text-center">
-              <img src={gdtLogoUrl} alt="GDT Logo" className="h-14 w-auto object-contain mb-1" />
-              <h1 className="text-[13px] font-bold text-slate-900 leading-tight whitespace-nowrap">
+              <img src={gdtLogoUrl} alt="GDT Logo" className="h-16 w-auto object-contain mb-1.5" />
+              <h1 className="text-[15px] font-bold text-slate-900 leading-tight whitespace-nowrap">
                 របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
               </h1>
-              <p className="text-[10.5px] font-bold text-slate-800 mt-0.5 leading-tight">
+              <p className="text-[12px] font-bold text-slate-800 mt-1 leading-tight">
                 ប្រចាំខែ {khmerMonthNameForPrint} ឆ្នាំ {year}
               </p>
             </div>
 
             {/* Right Block: At very top & center-aligned */}
             <div className="pt-0 flex justify-end">
-              <div className="text-center text-[10px] leading-relaxed min-w-[210px]">
-                <div className="font-bold text-[11px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                <div className="font-bold text-[10.5px] text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-                <div className="text-slate-700 font-bold text-[9px]">────────── ❖ ──────────</div>
+              <div className="text-center text-[11px] leading-relaxed min-w-[230px]">
+                <div className="font-bold text-[12.5px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                <div className="font-bold text-[12px] text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                <div className="text-slate-700 font-bold text-[10px]">────────── ❖ ──────────</div>
               </div>
             </div>
           </div>
 
-          <div className="text-[9.5px] font-bold text-slate-900 mb-1 leading-tight">
+          <div className="text-[11px] font-bold text-slate-900 mb-2 leading-tight">
             Telegram Group: ITS-SITE-SUPPORT-TEAM
           </div>
 
-          {/* Full Monthly Summary Table (Matching Excel Styling) */}
-          <table className="w-full border-collapse border border-slate-300 text-[8px]">
-            <thead>
-              <tr className="bg-white text-black">
-                <th rowSpan={2} className="print-col-branch bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
-                  សាខាពន្ធដារ
-                </th>
-                <th rowSpan={2} className="print-col-staff bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
-                  មន្ត្រីបច្ចេកទេស
-                </th>
-                {dates.map((dateStr, idx) => {
-                  const [y, m, dNum] = dateStr.split('-').map(Number);
-                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
-                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                  return (
-                    <th
-                      key={dateStr}
-                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center font-bold ${
-                        isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
-                      }`}
-                    >
-                      {idx + 1}
-                    </th>
-                  );
-                })}
-                <th rowSpan={2} className="print-col-rate bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
-                  អត្រា Post
-                </th>
-              </tr>
-              <tr>
-                {dates.map((dateStr) => {
-                  const [y, m, dNum] = dateStr.split('-').map(Number);
-                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
-                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                  const isSaturday = dayOfWeek === 6;
-                  return (
-                    <th
-                      key={`${dateStr}-sub`}
-                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center text-[7px] font-bold ${
-                        isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
-                      }`}
-                    >
-                      {isWeekend ? (isSaturday ? 'ស' : 'អ') : ''}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedBranchesForPrint.map((b) => {
-                const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
-                let postedCount = 0;
+          {/* Full Monthly Summary Table Wrapper (Flex-grow to stretch vertically) */}
+          <div className="print-table-container flex-1 flex flex-col w-full">
+            <table className="w-full border-collapse border border-slate-300 text-[9px]">
+              <thead>
+                <tr className="bg-white text-black">
+                  <th rowSpan={2} className="print-col-branch bg-white text-black border border-slate-300 px-1 py-1.5 text-center font-bold text-[10px]">
+                    សាខាពន្ធដារ
+                  </th>
+                  <th rowSpan={2} className="print-col-staff bg-white text-black border border-slate-300 px-1 py-1.5 text-center font-bold text-[10px]">
+                    មន្ត្រីបច្ចេកទេស
+                  </th>
+                  {dates.map((dateStr, idx) => {
+                    const [y, m, dNum] = dateStr.split('-').map(Number);
+                    const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    return (
+                      <th
+                        key={dateStr}
+                        className={`print-day-col border border-slate-300 px-0.5 py-1 text-center font-bold ${
+                          isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
+                        }`}
+                      >
+                        {idx + 1}
+                      </th>
+                    );
+                  })}
+                  <th rowSpan={2} className="print-col-rate bg-white text-black border border-slate-300 px-1 py-1.5 text-center font-bold text-[10px]">
+                    អត្រា Post
+                  </th>
+                </tr>
+                <tr>
+                  {dates.map((dateStr) => {
+                    const [y, m, dNum] = dateStr.split('-').map(Number);
+                    const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const isSaturday = dayOfWeek === 6;
+                    return (
+                      <th
+                        key={`${dateStr}-sub`}
+                        className={`print-day-col border border-slate-300 px-0.5 py-1 text-center text-[8px] font-bold ${
+                          isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
+                        }`}
+                      >
+                        {isWeekend ? (isSaturday ? 'ស' : 'អ') : ''}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedBranchesForPrint.map((b) => {
+                  const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
+                  let postedCount = 0;
 
-                const dayCells = dates.map((dateStr) => {
-                  const [y, m, dNum] = dateStr.split('-').map(Number);
-                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
-                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                  const r = reportLookup[`${dateStr}_${b.id}`];
-                  const isPosted = r && r.status === 'POSTED';
-                  const remarkText = (r?.remark || r?.note || '')
-                    .replace(/^\[REMARK:(.*?)\]\s*/s, '$1')
-                    .trim();
-                  const hasRemark = remarkText !== '' && remarkText !== 'ធម្មតា';
+                  const dayCells = dates.map((dateStr) => {
+                    const [y, m, dNum] = dateStr.split('-').map(Number);
+                    const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const r = reportLookup[`${dateStr}_${b.id}`];
+                    const isPosted = r && r.status === 'POSTED';
+                    const remarkText = (r?.remark || r?.note || '')
+                      .replace(/^\[REMARK:(.*?)\]\s*/s, '$1')
+                      .trim();
+                    const hasRemark = remarkText !== '' && remarkText !== 'ធម្មតា';
 
-                  if (dateStr <= todayStr && !isWeekend && isPosted) {
-                    postedCount++;
-                  }
+                    if (dateStr <= todayStr && !isWeekend && isPosted) {
+                      postedCount++;
+                    }
 
-                  let content = '';
-                  let cellStyle = 'bg-white text-slate-700 whitespace-nowrap';
+                    let content = '';
+                    let cellStyle = 'bg-white text-slate-700 whitespace-nowrap';
 
-                  if (hasRemark) {
-                    content = remarkText;
-                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6.5px] leading-none';
-                  } else if (dateStr <= todayStr) {
-                    if (isWeekend) {
-                      if (isPosted) {
+                    if (hasRemark) {
+                      content = remarkText;
+                      cellStyle = 'bg-rose-100 text-red-600 font-bold text-[7.5px] leading-none';
+                    } else if (dateStr <= todayStr) {
+                      if (isWeekend) {
+                        if (isPosted) {
+                          content = '✔';
+                          cellStyle = 'bg-emerald-100 text-emerald-800 font-bold whitespace-nowrap';
+                        } else {
+                          content = 'ស-អ';
+                          cellStyle = 'bg-slate-50 text-slate-400 text-[7.5px] whitespace-nowrap';
+                        }
+                      } else if (isPosted) {
                         content = '✔';
                         cellStyle = 'bg-emerald-100 text-emerald-800 font-bold whitespace-nowrap';
-                      } else {
-                        content = 'ស-អ';
-                        cellStyle = 'bg-slate-50 text-slate-400 text-[6.5px] whitespace-nowrap';
+                      } else if (r && r.status === 'NOT_POSTED') {
+                        content = '✘';
+                        cellStyle = 'bg-rose-100 text-rose-800 font-bold whitespace-nowrap';
                       }
-                    } else if (isPosted) {
-                      content = '✔';
-                      cellStyle = 'bg-emerald-100 text-emerald-800 font-bold whitespace-nowrap';
-                    } else if (r && r.status === 'NOT_POSTED') {
-                      content = '✘';
-                      cellStyle = 'bg-rose-100 text-rose-800 font-bold whitespace-nowrap';
+                    } else {
+                      content = '-';
+                      cellStyle = 'text-slate-300 whitespace-nowrap';
                     }
-                  } else {
-                    content = '-';
-                    cellStyle = 'text-slate-300 whitespace-nowrap';
-                  }
+
+                    return (
+                      <td key={dateStr} className={`print-day-col border border-slate-300 text-center ${cellStyle}`}>
+                        {content}
+                      </td>
+                    );
+                  });
+
+                  const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
+                  const rateStyle =
+                    rate >= 90
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : rate >= 60
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-rose-100 text-rose-800';
 
                   return (
-                    <td key={dateStr} className={`print-day-col border border-slate-300 text-center ${cellStyle}`}>
-                      {content}
-                    </td>
+                    <tr key={b.id}>
+                      <td className="print-col-branch border border-slate-300 px-1 py-2 font-bold text-slate-900 whitespace-nowrap text-[9px]">
+                        {b.nameKh}
+                      </td>
+                      <td className="print-col-staff border border-slate-300 px-1 py-2 text-slate-700 whitespace-nowrap text-[8.5px]">
+                        {bStaff}
+                      </td>
+                      {dayCells}
+                      <td className={`print-col-rate border border-slate-300 px-1 py-2 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
+                        <span className="text-[8.5px]">{rate}%</span>{' '}
+                        <span className="text-[7.5px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
+                      </td>
+                    </tr>
                   );
-                });
+                })}
+              </tbody>
+            </table>
+          </div>
 
-                const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
-                const rateStyle =
-                  rate >= 90
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : rate >= 60
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'bg-rose-100 text-rose-800';
-
-                return (
-                  <tr key={b.id}>
-                    <td className="print-col-branch border border-slate-300 px-1 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8px]">
-                      {b.nameKh}
-                    </td>
-                    <td className="print-col-staff border border-slate-300 px-1 py-0.5 text-slate-700 whitespace-nowrap text-[7.5px]">
-                      {bStaff}
-                    </td>
-                    {dayCells}
-                    <td className={`print-col-rate border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
-                      <span className="text-[7.5px]">{rate}%</span>{' '}
-                      <span className="text-[6.5px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-
-          {/* Signature Block */}
-          <div className="print-footer-block mt-2.5 flex justify-end">
-            <div className="text-center text-[9.5px] min-w-[200px] leading-snug">
+          {/* Signature Block (Pushed to bottom via margin-top: auto) */}
+          <div className="print-footer-block mt-auto pt-4 flex justify-end">
+            <div className="text-center text-[11px] min-w-[240px] leading-snug">
               <div className="italic text-slate-600">
                 ធ្វើនៅភ្នំពេញ, ថ្ងៃទី {printDayKh} ខែ {printMonthKh} ឆ្នាំ {printYearKh}
               </div>
-              <div className="font-bold text-slate-800 mt-0.5 text-[10px]">អ្នករៀបចំរបាយការណ៍</div>
-              <div className="mt-5 text-slate-400">......................................................</div>
+              <div className="font-bold text-slate-800 mt-1 text-[11.5px]">អ្នករៀបចំរបាយការណ៍</div>
+              <div className="mt-8 text-slate-400">......................................................</div>
             </div>
           </div>
         </div>,
