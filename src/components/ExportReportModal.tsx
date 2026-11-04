@@ -167,26 +167,36 @@ export default function ExportReportModal({
       }
 
       // =========================================================================
-      // 1. TOP OFFICIAL HEADER (Rows 0, 1, 2, 3)
       // =========================================================================
-      // Left Section (3 Lines, Merged A1:D1, A2:D2, A3:D3, Aligned Center)
-      setCell(0, 0, "អគ្គនាយកដ្ឋានពន្ធដារ", {
+      // 1. TOP OFFICIAL HEADER (Rows 0 to 4)
+      // =========================================================================
+      // Left Section: Rows 0 & 1 (Excel Rows 1 & 2) are left Blank.
+      // Rows 2, 3, 4 (Excel Rows 3, 4, 5) contain the 3 Left Header lines (Merged A3:D3, A4:D4, A5:D5, Aligned Center)
+      setCell(0, 0, "", {
+        fill: headerWhiteFill,
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+      setCell(0, 1, "", {
+        fill: headerWhiteFill,
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+      setCell(0, 2, "អគ្គនាយកដ្ឋានពន្ធដារ", {
         fill: headerWhiteFill,
         font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
-      setCell(0, 1, "នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន", {
+      setCell(0, 3, "នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន", {
         fill: headerWhiteFill,
         font: { sz: 10.5, bold: true, underline: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
-      setCell(0, 2, "ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន", {
+      setCell(0, 4, "ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន", {
         fill: headerWhiteFill,
         font: { sz: 10, bold: false, color: { rgb: '334155' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
-      // Right Section (2 Lines + Ornamental Underline, Merged & Aligned Center)
+      // Right Section (Rows 0, 1, 2 -> Excel Rows 1, 2, 3: 2 Lines + Ornamental Underline, Merged & Aligned Center)
       setCell(rightStartCol, 0, "ព្រះរាជាណាចក្រកម្ពុជា", {
         fill: headerWhiteFill,
         font: { sz: 12, bold: true, color: { rgb: '0F172A' } },
@@ -203,22 +213,22 @@ export default function ExportReportModal({
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
-      // Row 3: Dedicated full-width centered Logo row directly above Report Title
-      setCell(0, 3, "", {
+      // Row 3 Center: Dedicated centered Logo spacing row directly above Report Title
+      setCell(4, 3, "", {
         fill: headerWhiteFill,
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       // =========================================================================
-      // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Merged Full Width & Centered)
+      // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Centered in middle block)
       // =========================================================================
-      setCell(0, 4, "របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
+      setCell(4, 4, "របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
         fill: headerWhiteFill,
         font: { sz: 15, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
-      setCell(0, 5, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
+      setCell(4, 5, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
         fill: headerWhiteFill,
         font: { sz: 11.5, bold: true, color: { rgb: '1E293B' } },
         alignment: { horizontal: 'center', vertical: 'center' }
@@ -299,21 +309,22 @@ export default function ExportReportModal({
 
       // Initialize merges list
       const merges = [
-        // Top Header Left (Rows 0, 1, 2 -> Merged across 4 columns: A1:D1, A2:D2, A3:D3)
+        // Top Header Left: Rows 0 & 1 Blank (A1:D1, A2:D2), Rows 2, 3, 4 Text (A3:D3, A4:D4, A5:D5)
         { s: { c: 0, r: 0 }, e: { c: 3, r: 0 } },
         { s: { c: 0, r: 1 }, e: { c: 3, r: 1 } },
         { s: { c: 0, r: 2 }, e: { c: 3, r: 2 } },
-        // Top Header Center (Rows 0-2 between Left & Right blocks)
+        { s: { c: 0, r: 3 }, e: { c: 3, r: 3 } },
+        { s: { c: 0, r: 4 }, e: { c: 3, r: 4 } },
+        // Top Header Center (Rows 0-2 between Left & Right blocks for Logo)
         { s: { c: 4, r: 0 }, e: { c: rightStartCol - 1, r: 2 } },
         // Top Header Right (Rows 0, 1, 2 -> Merged across right columns & centered)
         { s: { c: rightStartCol, r: 0 }, e: { c: rateColIndex, r: 0 } },
         { s: { c: rightStartCol, r: 1 }, e: { c: rateColIndex, r: 1 } },
         { s: { c: rightStartCol, r: 2 }, e: { c: rateColIndex, r: 2 } },
-        // Logo Row (Row 3 -> Merged Full Width from Column 0 to Last Column, matching Title rows)
-        { s: { c: 0, r: 3 }, e: { c: rateColIndex, r: 3 } },
-        // Report Title & Subtitle (Rows 4 & 5 -> Merged Full Width from Column 0 to Last Column)
-        { s: { c: 0, r: 4 }, e: { c: rateColIndex, r: 4 } },
-        { s: { c: 0, r: 5 }, e: { c: rateColIndex, r: 5 } },
+        // Logo bottom spacing & Report Title & Subtitle (Rows 3, 4 & 5 -> Centered between c: 4 and rightStartCol - 1)
+        { s: { c: 4, r: 3 }, e: { c: rightStartCol - 1, r: 3 } },
+        { s: { c: 4, r: 4 }, e: { c: rightStartCol - 1, r: 4 } },
+        { s: { c: 4, r: 5 }, e: { c: rightStartCol - 1, r: 5 } },
         // Telegram Group Sub-title (Row 6)
         { s: { c: 0, r: 6 }, e: { c: 5, r: 6 } },
         // Table Headers (Rows 7 & 8)
@@ -508,14 +519,15 @@ export default function ExportReportModal({
         // Add logo image binary to xl/media/image1.png
         zip.file('xl/media/image1.png', logoBuffer);
 
-        // Compute exact pixel width of the full table (Column 0 to rateColIndex)
+        // Compute exact pixel midpoint of the Center Header & Title block (Column 4 to rightStartCol - 1)
         // so the 105px-wide GDT logo is centered at the exact same horizontal midpoint
-        // as the full-width merged Report Title & Subtitle rows (A to lastColLetter).
+        // as the merged Report Title & Subtitle rows.
         const logoWidthPx = 105;
         const logoHeightPx = 82;
         const colPxList = colWidths.map(cw => cw.wch * 7.5 + 6);
-        const totalTablePx = colPxList.reduce((sum, px) => sum + px, 0);
-        const targetLogoLeftPx = (totalTablePx - logoWidthPx) / 2;
+        const centerStartPx = colPxList.slice(0, 4).reduce((sum, px) => sum + px, 0);
+        const centerEndPx = colPxList.slice(0, rightStartCol).reduce((sum, px) => sum + px, 0);
+        const targetLogoLeftPx = (centerStartPx + centerEndPx - logoWidthPx) / 2;
 
         let accumulatedPx = 0;
         let logoCenterCol = 0;
