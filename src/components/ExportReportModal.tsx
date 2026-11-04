@@ -846,19 +846,32 @@ export default function ExportReportModal({
       {createPortal(
         <div id="printable-monthly-report" className="hidden print:block bg-white text-slate-900 w-full">
           <style>{`
+            @page {
+              size: A4 portrait;
+              margin-top: 0in;
+              margin-bottom: 0in;
+              margin-left: 0.2in;
+              margin-right: 0.2in;
+            }
             @media print {
               @page {
                 size: A4 portrait;
-                margin: 5mm;
+                margin-top: 0in;
+                margin-bottom: 0in;
+                margin-left: 0.2in;
+                margin-right: 0.2in;
               }
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
                 background: #ffffff !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 transform: none !important;
+                overflow: hidden !important;
               }
               body > *:not(#printable-monthly-report) {
                 display: none !important;
@@ -867,11 +880,14 @@ export default function ExportReportModal({
                 display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                padding-top: 0.12in !important;
+                padding-bottom: 0.1in !important;
+                box-sizing: border-box !important;
                 background: #ffffff !important;
                 font-family: "Khmer OS Siemreap", "Kantumruy Pro", sans-serif !important;
                 font-size: 8px !important;
                 line-height: 1.2 !important;
-                zoom: 0.48;
+                zoom: 0.62;
                 transform: none !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
@@ -880,8 +896,9 @@ export default function ExportReportModal({
               }
               #printable-monthly-report table {
                 width: 100% !important;
+                max-width: 100% !important;
                 border-collapse: collapse !important;
-                table-layout: auto !important;
+                table-layout: fixed !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
@@ -891,10 +908,20 @@ export default function ExportReportModal({
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
+              #printable-monthly-report .print-col-branch {
+                width: 98px !important;
+              }
+              #printable-monthly-report .print-col-staff {
+                width: 98px !important;
+              }
+              #printable-monthly-report .print-col-rate {
+                width: 88px !important;
+              }
               #printable-monthly-report .print-day-col {
-                padding: 1.5px 0.5px !important;
+                padding: 2px 0.5px !important;
                 font-size: 7.5px !important;
                 line-height: 1.1 !important;
+                overflow: hidden !important;
               }
               #printable-monthly-report .print-footer-block {
                 page-break-inside: avoid !important;
@@ -943,10 +970,10 @@ export default function ExportReportModal({
           <table className="w-full border-collapse border border-slate-300 text-[8px]">
             <thead>
               <tr className="bg-white text-black">
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[82px] text-[9px]">
+                <th rowSpan={2} className="print-col-branch bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
                   សាខាពន្ធដារ
                 </th>
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[68px] text-[9px]">
+                <th rowSpan={2} className="print-col-staff bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
                   មន្ត្រីបច្ចេកទេស
                 </th>
                 {dates.map((dateStr, idx) => {
@@ -964,7 +991,7 @@ export default function ExportReportModal({
                     </th>
                   );
                 })}
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[70px] text-[9px]">
+                <th rowSpan={2} className="print-col-rate bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold text-[9px]">
                   អត្រា Post
                 </th>
               </tr>
@@ -1008,34 +1035,34 @@ export default function ExportReportModal({
                   }
 
                   let content = '';
-                  let cellStyle = 'bg-white text-slate-700';
+                  let cellStyle = 'bg-white text-slate-700 whitespace-nowrap';
 
                   if (hasRemark) {
                     content = remarkText;
-                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6.5px]';
+                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6.5px] leading-none';
                   } else if (dateStr <= todayStr) {
                     if (isWeekend) {
                       if (isPosted) {
                         content = '✔';
-                        cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
+                        cellStyle = 'bg-emerald-100 text-emerald-800 font-bold whitespace-nowrap';
                       } else {
                         content = 'ស-អ';
-                        cellStyle = 'bg-slate-50 text-slate-400 text-[6.5px]';
+                        cellStyle = 'bg-slate-50 text-slate-400 text-[6.5px] whitespace-nowrap';
                       }
                     } else if (isPosted) {
                       content = '✔';
-                      cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
+                      cellStyle = 'bg-emerald-100 text-emerald-800 font-bold whitespace-nowrap';
                     } else if (r && r.status === 'NOT_POSTED') {
                       content = '✘';
-                      cellStyle = 'bg-rose-100 text-rose-800 font-bold';
+                      cellStyle = 'bg-rose-100 text-rose-800 font-bold whitespace-nowrap';
                     }
                   } else {
                     content = '-';
-                    cellStyle = 'text-slate-300';
+                    cellStyle = 'text-slate-300 whitespace-nowrap';
                   }
 
                   return (
-                    <td key={dateStr} className={`print-day-col border border-slate-300 text-center whitespace-nowrap ${cellStyle}`}>
+                    <td key={dateStr} className={`print-day-col border border-slate-300 text-center ${cellStyle}`}>
                       {content}
                     </td>
                   );
@@ -1051,14 +1078,14 @@ export default function ExportReportModal({
 
                 return (
                   <tr key={b.id}>
-                    <td className="border border-slate-300 px-1 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8px]">
+                    <td className="print-col-branch border border-slate-300 px-1 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8px]">
                       {b.nameKh}
                     </td>
-                    <td className="border border-slate-300 px-1 py-0.5 text-slate-700 whitespace-nowrap text-[7.5px]">
+                    <td className="print-col-staff border border-slate-300 px-1 py-0.5 text-slate-700 whitespace-nowrap text-[7.5px]">
                       {bStaff}
                     </td>
                     {dayCells}
-                    <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
+                    <td className={`print-col-rate border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
                       <span className="text-[7.5px]">{rate}%</span>{' '}
                       <span className="text-[6.5px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
                     </td>
