@@ -848,7 +848,7 @@ export default function ExportReportModal({
           <style>{`
             @media print {
               @page {
-                size: A4 portrait;
+                size: A4 landscape;
                 margin: 5mm;
               }
               html, body {
@@ -865,9 +865,11 @@ export default function ExportReportModal({
                 display: block !important;
                 width: 100% !important;
                 background: #ffffff !important;
-                font-size: 7.5px !important;
+                font-family: "Khmer OS Siemreap", "Kantumruy Pro", sans-serif !important;
+                font-size: 8.5px !important;
                 line-height: 1.2 !important;
-                zoom: 65%;
+                zoom: 0.72;
+                transform-origin: top center;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 page-break-after: avoid !important;
@@ -886,8 +888,8 @@ export default function ExportReportModal({
                 break-inside: avoid !important;
               }
               #printable-monthly-report .print-day-col {
-                padding: 1.5px 0.5px !important;
-                font-size: 7px !important;
+                padding: 2px 1px !important;
+                font-size: 8px !important;
                 line-height: 1.1 !important;
               }
               #printable-monthly-report .print-footer-block {
@@ -897,45 +899,50 @@ export default function ExportReportModal({
             }
           `}</style>
 
-          {/* Top Official GDT Header */}
+          {/* Top Official GDT Header (Matching Excel Layout: Left shifted down & centered, Center Logo + Title, Right at top & centered) */}
           <div className="grid grid-cols-3 items-start mb-1">
-            <div className="text-left text-[9.5px] leading-snug">
-              <div className="font-bold text-slate-900">អគ្គនាយកដ្ឋានពន្ធដារ</div>
-              <div className="font-bold underline text-slate-900">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
-              <div className="text-slate-700">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
+            {/* Left Block: Shifted down ~2 rows & center-aligned like Excel A3:D5 */}
+            <div className="pt-6 flex justify-start">
+              <div className="text-center text-[10px] leading-relaxed min-w-[230px]">
+                <div className="font-bold text-slate-900 text-[10.5px]">អគ្គនាយកដ្ឋានពន្ធដារ</div>
+                <div className="font-bold underline text-slate-900 text-[10px]">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
+                <div className="text-slate-700 text-[9.5px]">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
+              </div>
             </div>
-            <div className="flex justify-center">
-              <img src={gdtLogoUrl} alt="GDT Logo" className="h-12 w-auto object-contain" />
+
+            {/* Center Block: GDT Logo + Report Title & Subtitle directly centered underneath */}
+            <div className="flex flex-col items-center justify-start text-center">
+              <img src={gdtLogoUrl} alt="GDT Logo" className="h-14 w-auto object-contain mb-1" />
+              <h1 className="text-[13px] font-bold text-slate-900 leading-tight whitespace-nowrap">
+                របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
+              </h1>
+              <p className="text-[10.5px] font-bold text-slate-800 mt-0.5 leading-tight">
+                ប្រចាំខែ {khmerMonthNameForPrint} ឆ្នាំ {year}
+              </p>
             </div>
-            <div className="text-center text-[9.5px] leading-snug">
-              <div className="font-bold text-[10px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
-              <div className="font-bold text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-              <div className="text-slate-700 font-bold text-[9px]">────────── ❖ ──────────</div>
+
+            {/* Right Block: At very top & center-aligned */}
+            <div className="pt-0 flex justify-end">
+              <div className="text-center text-[10px] leading-relaxed min-w-[230px]">
+                <div className="font-bold text-[11px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                <div className="font-bold text-[10.5px] text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                <div className="text-slate-700 font-bold text-[9px]">────────── ❖ ──────────</div>
+              </div>
             </div>
           </div>
 
-          {/* Report Title & Subtitle */}
-          <div className="text-center my-1.5">
-            <h1 className="text-[11px] font-bold text-slate-900 leading-tight">
-              របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
-            </h1>
-            <p className="text-[9.5px] font-bold text-slate-800 mt-0.5 leading-tight">
-              ប្រចាំខែ {khmerMonthNameForPrint} ឆ្នាំ {year}
-            </p>
-          </div>
-
-          <div className="text-[8.5px] font-bold text-slate-900 mb-1 leading-tight">
+          <div className="text-[9.5px] font-bold text-slate-900 mb-1 leading-tight">
             Telegram Group: ITS-SITE-SUPPORT-TEAM
           </div>
 
-          {/* Full Monthly Summary Table */}
-          <table className="w-full border-collapse border border-slate-300 text-[7.5px]">
+          {/* Full Monthly Summary Table (Matching Excel Styling) */}
+          <table className="w-full border-collapse border border-slate-300 text-[8.5px]">
             <thead>
-              <tr className="bg-slate-800 text-white">
-                <th rowSpan={2} className="border border-slate-300 px-1 py-1 text-center font-bold min-w-[82px] text-[8px]">
+              <tr className="bg-white text-black">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[95px] text-[9.5px]">
                   សាខាពន្ធដារ
                 </th>
-                <th rowSpan={2} className="border border-slate-300 px-1 py-1 text-center font-bold min-w-[66px] text-[8px]">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[78px] text-[9.5px]">
                   មន្ត្រីបច្ចេកទេស
                 </th>
                 {dates.map((dateStr, idx) => {
@@ -953,7 +960,7 @@ export default function ExportReportModal({
                     </th>
                   );
                 })}
-                <th rowSpan={2} className="border border-slate-300 px-1 py-1 text-center font-bold min-w-[68px] text-[8px]">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[78px] text-[9.5px]">
                   អត្រា Post
                 </th>
               </tr>
@@ -966,7 +973,7 @@ export default function ExportReportModal({
                   return (
                     <th
                       key={`${dateStr}-sub`}
-                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center text-[6.5px] font-bold ${
+                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center text-[7.5px] font-bold ${
                         isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
                       }`}
                     >
@@ -1001,7 +1008,7 @@ export default function ExportReportModal({
 
                   if (hasRemark) {
                     content = remarkText;
-                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6px]';
+                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[7px]';
                   } else if (dateStr <= todayStr) {
                     if (isWeekend) {
                       if (isPosted) {
@@ -1009,7 +1016,7 @@ export default function ExportReportModal({
                         cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
                       } else {
                         content = 'ស-អ';
-                        cellStyle = 'bg-slate-50 text-slate-400 text-[6px]';
+                        cellStyle = 'bg-slate-50 text-slate-400 text-[7px]';
                       }
                     } else if (isPosted) {
                       content = '✔';
@@ -1040,16 +1047,16 @@ export default function ExportReportModal({
 
                 return (
                   <tr key={b.id}>
-                    <td className="border border-slate-300 px-1 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[7.5px]">
+                    <td className="border border-slate-300 px-1.5 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8.5px]">
                       {b.nameKh}
                     </td>
-                    <td className="border border-slate-300 px-1 py-0.5 text-slate-700 whitespace-nowrap text-[7.5px]">
+                    <td className="border border-slate-300 px-1.5 py-0.5 text-slate-700 whitespace-nowrap text-[8px]">
                       {bStaff}
                     </td>
                     {dayCells}
-                    <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-none ${rateStyle}`}>
-                      <span className="text-[7.5px]">{rate}%</span>{' '}
-                      <span className="text-[6.5px] font-semibold">({postedCount}/{totalWorkingDays}ថ្ងៃ)</span>
+                    <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
+                      <span className="text-[8px]">{rate}%</span>{' '}
+                      <span className="text-[7px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
                     </td>
                   </tr>
                 );
@@ -1058,13 +1065,13 @@ export default function ExportReportModal({
           </table>
 
           {/* Signature Block */}
-          <div className="print-footer-block mt-3 flex justify-end">
-            <div className="text-center text-[8.5px] min-w-[180px] leading-snug">
+          <div className="print-footer-block mt-2.5 flex justify-end">
+            <div className="text-center text-[9.5px] min-w-[220px] leading-snug">
               <div className="italic text-slate-600">
                 ធ្វើនៅភ្នំពេញ, ថ្ងៃទី {printDayKh} ខែ {printMonthKh} ឆ្នាំ {printYearKh}
               </div>
-              <div className="font-bold text-slate-800 mt-0.5">អ្នករៀបចំរបាយការណ៍</div>
-              <div className="mt-6 text-slate-400">......................................................</div>
+              <div className="font-bold text-slate-800 mt-0.5 text-[10px]">អ្នករៀបចំរបាយការណ៍</div>
+              <div className="mt-5 text-slate-400">......................................................</div>
             </div>
           </div>
         </div>,
