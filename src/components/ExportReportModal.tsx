@@ -152,49 +152,65 @@ export default function ExportReportModal({
       };
 
       const rateColIndex = 2 + daysInMonth;
-      const rightStartCol = Math.max(18, rateColIndex - 9);
+      const rightStartCol = Math.max(18, rateColIndex - 6);
+
+      // White background fill (no borders) for all Header rows (Rows 0 to 7) to hide default Excel gridlines
+      const headerWhiteFill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FFFFFF' } };
+      for (let r = 0; r <= 7; r++) {
+        for (let c = 0; c <= rateColIndex; c++) {
+          setCell(c, r, "", { fill: headerWhiteFill });
+        }
+      }
 
       // =========================================================================
       // 1. TOP OFFICIAL HEADER (Rows 0, 1, 2, 3)
       // =========================================================================
-      // Left Section (3 Lines, Aligned Left)
+      // Left Section (3 Lines, Merged A1:D1, A2:D2, A3:D3, Aligned Left)
       setCell(0, 0, "អគ្គនាយកដ្ឋានពន្ធដារ", {
+        fill: headerWhiteFill,
         font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
       setCell(0, 1, "នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន", {
-        font: { sz: 10.5, bold: true, color: { rgb: '1E293B' } },
+        fill: headerWhiteFill,
+        font: { sz: 10.5, bold: true, underline: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
       setCell(0, 2, "ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន", {
-        font: { sz: 10, bold: true, color: { rgb: '334155' } },
+        fill: headerWhiteFill,
+        font: { sz: 10, bold: false, color: { rgb: '334155' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
 
-      // Right Section (2 Lines + Ornamental Underline, Aligned Center)
+      // Right Section (2 Lines + Ornamental Underline, Merged & Aligned Center)
       setCell(rightStartCol, 0, "ព្រះរាជាណាចក្រកម្ពុជា", {
-        font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
+        fill: headerWhiteFill,
+        font: { sz: 12, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
       setCell(rightStartCol, 1, "ជាតិ សាសនា ព្រះមហាក្សត្រ", {
-        font: { sz: 10.5, bold: true, color: { rgb: '0F172A' } },
+        fill: headerWhiteFill,
+        font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
       setCell(rightStartCol, 2, "────────── ❖ ──────────", {
-        font: { sz: 9.5, bold: true, color: { rgb: '475569' } },
+        fill: headerWhiteFill,
+        font: { sz: 9.5, bold: true, color: { rgb: '334155' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       // =========================================================================
-      // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Centered below Logo)
+      // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Merged Full Width & Centered)
       // =========================================================================
       setCell(0, 4, "របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
-        font: { sz: 14, bold: true, color: { rgb: '0F172A' } },
+        fill: headerWhiteFill,
+        font: { sz: 15, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       setCell(0, 5, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
-        font: { sz: 11, bold: true, color: { rgb: '334155' } },
+        fill: headerWhiteFill,
+        font: { sz: 11.5, bold: true, color: { rgb: '1E293B' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
@@ -202,20 +218,24 @@ export default function ExportReportModal({
       // 3. SUB-TITLE & LEGEND ROW (Rows 6 & 7 - Above Table)
       // =========================================================================
       setCell(0, 6, "Telegram Group: ITS-SITE-SUPPORT-TEAM", {
+        fill: headerWhiteFill,
         font: { sz: 10, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
 
       // Legend Row (Row index 7)
       setCell(0, 7, "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)", {
+        fill: headerWhiteFill,
         font: { sz: 9.5, bold: true, color: { rgb: '10B981' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
       setCell(9, 7, "☒ អត់បានរាយការណ៍ (NOT POSTED)", {
+        fill: headerWhiteFill,
         font: { sz: 9.5, bold: true, color: { rgb: 'EF4444' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
       setCell(18, 7, "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)", {
+        fill: headerWhiteFill,
         font: { sz: 9.5, bold: true, color: { rgb: '64748B' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
@@ -286,25 +306,25 @@ export default function ExportReportModal({
 
       // Initialize merges list
       const merges = [
-        // Top Header Left (Rows 0, 1, 2)
-        { s: { c: 0, r: 0 }, e: { c: 8, r: 0 } },
-        { s: { c: 0, r: 1 }, e: { c: 8, r: 1 } },
-        { s: { c: 0, r: 2 }, e: { c: 8, r: 2 } },
+        // Top Header Left (Rows 0, 1, 2 -> Merged across 4 columns: A1:D1, A2:D2, A3:D3)
+        { s: { c: 0, r: 0 }, e: { c: 3, r: 0 } },
+        { s: { c: 0, r: 1 }, e: { c: 3, r: 1 } },
+        { s: { c: 0, r: 2 }, e: { c: 3, r: 2 } },
         // Top Header Center (Logo area across Rows 0-3)
-        { s: { c: 9, r: 0 }, e: { c: rightStartCol - 1, r: 3 } },
-        // Top Header Right (Rows 0, 1, 2)
+        { s: { c: 4, r: 0 }, e: { c: rightStartCol - 1, r: 3 } },
+        // Top Header Right (Rows 0, 1, 2 -> Merged across right columns & centered)
         { s: { c: rightStartCol, r: 0 }, e: { c: rateColIndex, r: 0 } },
         { s: { c: rightStartCol, r: 1 }, e: { c: rateColIndex, r: 1 } },
         { s: { c: rightStartCol, r: 2 }, e: { c: rateColIndex, r: 2 } },
-        // Report Title & Subtitle (Rows 4 & 5)
+        // Report Title & Subtitle (Rows 4 & 5 -> Merged from Column 0 to Last Column)
         { s: { c: 0, r: 4 }, e: { c: rateColIndex, r: 4 } },
         { s: { c: 0, r: 5 }, e: { c: rateColIndex, r: 5 } },
         // Telegram Group Sub-title (Row 6)
-        { s: { c: 0, r: 6 }, e: { c: 8, r: 6 } },
+        { s: { c: 0, r: 6 }, e: { c: 5, r: 6 } },
         // Legend Row (Row 7)
         { s: { c: 0, r: 7 }, e: { c: 8, r: 7 } },
         { s: { c: 9, r: 7 }, e: { c: 17, r: 7 } },
-        { s: { c: 18, r: 7 }, e: { c: 28, r: 7 } },
+        { s: { c: 18, r: 7 }, e: { c: rateColIndex, r: 7 } },
         // Table Headers (Rows 8 & 9)
         { s: { c: 0, r: tableHeaderRow }, e: { c: 0, r: tableSubHeaderRow } }, // branch header
         { s: { c: 1, r: tableHeaderRow }, e: { c: 1, r: tableSubHeaderRow } }, // staff header
@@ -498,11 +518,11 @@ export default function ExportReportModal({
         // Add logo image binary to xl/media/image1.png
         zip.file('xl/media/image1.png', logoBuffer);
 
-        // Position logo at visual center of the sheet (Row 0, Center Column)
-        const logoCenterCol = Math.max(12, Math.floor(daysInMonth / 2));
+        // Position logo at visual horizontal center above Report Title
+        const logoCenterCol = Math.max(10, Math.floor(daysInMonth / 2) - 3);
         const widthEmu = 105 * 9525;  // 105px width (preserves 282x220 aspect ratio)
         const heightEmu = 82 * 9525;  // 82px height (fits cleanly inside Rows 0-3)
-        const colOffEmu = 4 * 9525;
+        const colOffEmu = 12 * 9525;
         const rowOffEmu = 4 * 9525;
 
         const drawingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
