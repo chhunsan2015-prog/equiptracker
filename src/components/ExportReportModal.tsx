@@ -154,11 +154,14 @@ export default function ExportReportModal({
       const rateColIndex = 2 + daysInMonth;
       const rightStartCol = Math.max(18, rateColIndex - 6);
 
-      // White background fill (no borders) for all Header rows (Rows 0 to 7) to hide default Excel gridlines
+      // White background fill (no borders) for all Header rows (Rows 0 to 6) to hide default Excel gridlines
       const headerWhiteFill = { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FFFFFF' } };
-      for (let r = 0; r <= 7; r++) {
+      for (let r = 0; r <= 6; r++) {
         for (let c = 0; c <= rateColIndex; c++) {
-          setCell(c, r, "", { fill: headerWhiteFill });
+          setCell(c, r, "", {
+            fill: headerWhiteFill,
+            alignment: { horizontal: 'center', vertical: 'center' }
+          });
         }
       }
 
@@ -199,6 +202,12 @@ export default function ExportReportModal({
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
+      // Row 3: Dedicated full-width centered Logo row directly above Report Title
+      setCell(0, 3, "", {
+        fill: headerWhiteFill,
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+
       // =========================================================================
       // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Merged Full Width & Centered)
       // =========================================================================
@@ -215,28 +224,11 @@ export default function ExportReportModal({
       });
 
       // =========================================================================
-      // 3. SUB-TITLE & LEGEND ROW (Rows 6 & 7 - Above Table)
+      // 3. SUB-TITLE ROW (Row 6 - Above Table)
       // =========================================================================
       setCell(0, 6, "Telegram Group: ITS-SITE-SUPPORT-TEAM", {
         fill: headerWhiteFill,
         font: { sz: 10, bold: true, color: { rgb: '0F172A' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
-      });
-
-      // Legend Row (Row index 7)
-      setCell(0, 7, "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)", {
-        fill: headerWhiteFill,
-        font: { sz: 9.5, bold: true, color: { rgb: '10B981' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
-      });
-      setCell(9, 7, "☒ អត់បានរាយការណ៍ (NOT POSTED)", {
-        fill: headerWhiteFill,
-        font: { sz: 9.5, bold: true, color: { rgb: 'EF4444' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
-      });
-      setCell(18, 7, "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)", {
-        fill: headerWhiteFill,
-        font: { sz: 9.5, bold: true, color: { rgb: '64748B' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
 
@@ -271,11 +263,11 @@ export default function ExportReportModal({
       };
 
       // =========================================================================
-      // 4. TABLE HEADERS (Row index 8 and Row index 9)
+      // 4. TABLE HEADERS (Row index 7 and Row index 8)
       // =========================================================================
-      const tableHeaderRow = 8;
-      const tableSubHeaderRow = 9;
-      const dataStartRow = 10;
+      const tableHeaderRow = 7;
+      const tableSubHeaderRow = 8;
+      const dataStartRow = 9;
 
       setCell(0, tableHeaderRow, "សាខាពន្ធដារ", mainHeaderStyle);
       setCell(0, tableSubHeaderRow, "", mainHeaderStyle);
@@ -310,22 +302,20 @@ export default function ExportReportModal({
         { s: { c: 0, r: 0 }, e: { c: 3, r: 0 } },
         { s: { c: 0, r: 1 }, e: { c: 3, r: 1 } },
         { s: { c: 0, r: 2 }, e: { c: 3, r: 2 } },
-        // Top Header Center (Logo area across Rows 0-3)
-        { s: { c: 4, r: 0 }, e: { c: rightStartCol - 1, r: 3 } },
+        // Top Header Center (Rows 0-2 between Left & Right blocks)
+        { s: { c: 4, r: 0 }, e: { c: rightStartCol - 1, r: 2 } },
         // Top Header Right (Rows 0, 1, 2 -> Merged across right columns & centered)
         { s: { c: rightStartCol, r: 0 }, e: { c: rateColIndex, r: 0 } },
         { s: { c: rightStartCol, r: 1 }, e: { c: rateColIndex, r: 1 } },
         { s: { c: rightStartCol, r: 2 }, e: { c: rateColIndex, r: 2 } },
-        // Report Title & Subtitle (Rows 4 & 5 -> Merged from Column 0 to Last Column)
+        // Logo Row (Row 3 -> Merged Full Width from Column 0 to Last Column, matching Title rows)
+        { s: { c: 0, r: 3 }, e: { c: rateColIndex, r: 3 } },
+        // Report Title & Subtitle (Rows 4 & 5 -> Merged Full Width from Column 0 to Last Column)
         { s: { c: 0, r: 4 }, e: { c: rateColIndex, r: 4 } },
         { s: { c: 0, r: 5 }, e: { c: rateColIndex, r: 5 } },
         // Telegram Group Sub-title (Row 6)
         { s: { c: 0, r: 6 }, e: { c: 5, r: 6 } },
-        // Legend Row (Row 7)
-        { s: { c: 0, r: 7 }, e: { c: 8, r: 7 } },
-        { s: { c: 9, r: 7 }, e: { c: 17, r: 7 } },
-        { s: { c: 18, r: 7 }, e: { c: rateColIndex, r: 7 } },
-        // Table Headers (Rows 8 & 9)
+        // Table Headers (Rows 7 & 8)
         { s: { c: 0, r: tableHeaderRow }, e: { c: 0, r: tableSubHeaderRow } }, // branch header
         { s: { c: 1, r: tableHeaderRow }, e: { c: 1, r: tableSubHeaderRow } }, // staff header
         { s: { c: rateColIndex, r: tableHeaderRow }, e: { c: rateColIndex, r: tableSubHeaderRow } }, // rate header
@@ -487,9 +477,8 @@ export default function ExportReportModal({
         { hpt: 28 }, // Row 4 (Report Title)
         { hpt: 22 }, // Row 5 (Report Subtitle)
         { hpt: 20 }, // Row 6 (Telegram Group Sub-title)
-        { hpt: 20 }, // Row 7 (Legend)
-        { hpt: 22 }, // Row 8 (Table Header Row 1)
-        { hpt: 18 }, // Row 9 (Table Header Row 2)
+        { hpt: 22 }, // Row 7 (Table Header Row 1)
+        { hpt: 18 }, // Row 8 (Table Header Row 2)
       ];
       for (let i = 0; i < sortedBranchesForExcel.length; i++) {
         rowHeights.push({ hpt: 38, hpx: 48 }); // Branch rows - taller height for 2-line Khmer text in Rate column
@@ -507,7 +496,7 @@ export default function ExportReportModal({
       const fileName = `Daily_Equipment_Report_Summary_${selectedMonth}.xlsx`;
 
       // =========================================================================
-      // 5. EMBED GDT LOGO (gdtlogo.png) INTO CENTER OF TOP HEADER (Rows 0-3)
+      // 5. EMBED GDT LOGO (gdtlogo.png) INTO EXACT HORIZONTAL CENTER OF TABLE
       // =========================================================================
       try {
         const xlsxArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -518,11 +507,30 @@ export default function ExportReportModal({
         // Add logo image binary to xl/media/image1.png
         zip.file('xl/media/image1.png', logoBuffer);
 
-        // Position logo at visual horizontal center above Report Title
-        const logoCenterCol = Math.max(10, Math.floor(daysInMonth / 2) - 3);
-        const widthEmu = 105 * 9525;  // 105px width (preserves 282x220 aspect ratio)
-        const heightEmu = 82 * 9525;  // 82px height (fits cleanly inside Rows 0-3)
-        const colOffEmu = 12 * 9525;
+        // Compute exact pixel width of the full table (Column 0 to rateColIndex)
+        // so the 105px-wide GDT logo is centered at the exact same horizontal midpoint
+        // as the full-width merged Report Title & Subtitle rows (A to lastColLetter).
+        const logoWidthPx = 105;
+        const logoHeightPx = 82;
+        const colPxList = colWidths.map(cw => cw.wch * 7.5 + 6);
+        const totalTablePx = colPxList.reduce((sum, px) => sum + px, 0);
+        const targetLogoLeftPx = (totalTablePx - logoWidthPx) / 2;
+
+        let accumulatedPx = 0;
+        let logoCenterCol = 0;
+        let logoColOffsetPx = 0;
+        for (let c = 0; c < colPxList.length; c++) {
+          if (accumulatedPx + colPxList[c] > targetLogoLeftPx) {
+            logoCenterCol = c;
+            logoColOffsetPx = targetLogoLeftPx - accumulatedPx;
+            break;
+          }
+          accumulatedPx += colPxList[c];
+        }
+
+        const widthEmu = logoWidthPx * 9525;
+        const heightEmu = logoHeightPx * 9525;
+        const colOffEmu = Math.round(logoColOffsetPx * 9525);
         const rowOffEmu = 4 * 9525;
 
         const drawingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
