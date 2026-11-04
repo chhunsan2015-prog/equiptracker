@@ -848,15 +848,17 @@ export default function ExportReportModal({
           <style>{`
             @media print {
               @page {
-                size: A4 landscape;
+                size: A4 portrait;
                 margin: 5mm;
               }
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
+                width: 100% !important;
                 background: #ffffff !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                transform: none !important;
               }
               body > *:not(#printable-monthly-report) {
                 display: none !important;
@@ -864,12 +866,13 @@ export default function ExportReportModal({
               #printable-monthly-report {
                 display: block !important;
                 width: 100% !important;
+                max-width: 100% !important;
                 background: #ffffff !important;
                 font-family: "Khmer OS Siemreap", "Kantumruy Pro", sans-serif !important;
-                font-size: 8.5px !important;
+                font-size: 8px !important;
                 line-height: 1.2 !important;
-                zoom: 0.72;
-                transform-origin: top center;
+                zoom: 0.48;
+                transform: none !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 page-break-after: avoid !important;
@@ -878,6 +881,7 @@ export default function ExportReportModal({
               #printable-monthly-report table {
                 width: 100% !important;
                 border-collapse: collapse !important;
+                table-layout: auto !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
@@ -888,8 +892,8 @@ export default function ExportReportModal({
                 break-inside: avoid !important;
               }
               #printable-monthly-report .print-day-col {
-                padding: 2px 1px !important;
-                font-size: 8px !important;
+                padding: 1.5px 0.5px !important;
+                font-size: 7.5px !important;
                 line-height: 1.1 !important;
               }
               #printable-monthly-report .print-footer-block {
@@ -903,7 +907,7 @@ export default function ExportReportModal({
           <div className="grid grid-cols-3 items-start mb-1">
             {/* Left Block: Shifted down ~2 rows & center-aligned like Excel A3:D5 */}
             <div className="pt-6 flex justify-start">
-              <div className="text-center text-[10px] leading-relaxed min-w-[230px]">
+              <div className="text-center text-[10px] leading-relaxed min-w-[210px]">
                 <div className="font-bold text-slate-900 text-[10.5px]">អគ្គនាយកដ្ឋានពន្ធដារ</div>
                 <div className="font-bold underline text-slate-900 text-[10px]">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
                 <div className="text-slate-700 text-[9.5px]">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
@@ -923,7 +927,7 @@ export default function ExportReportModal({
 
             {/* Right Block: At very top & center-aligned */}
             <div className="pt-0 flex justify-end">
-              <div className="text-center text-[10px] leading-relaxed min-w-[230px]">
+              <div className="text-center text-[10px] leading-relaxed min-w-[210px]">
                 <div className="font-bold text-[11px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
                 <div className="font-bold text-[10.5px] text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
                 <div className="text-slate-700 font-bold text-[9px]">────────── ❖ ──────────</div>
@@ -936,13 +940,13 @@ export default function ExportReportModal({
           </div>
 
           {/* Full Monthly Summary Table (Matching Excel Styling) */}
-          <table className="w-full border-collapse border border-slate-300 text-[8.5px]">
+          <table className="w-full border-collapse border border-slate-300 text-[8px]">
             <thead>
               <tr className="bg-white text-black">
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[95px] text-[9.5px]">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[82px] text-[9px]">
                   សាខាពន្ធដារ
                 </th>
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[78px] text-[9.5px]">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[68px] text-[9px]">
                   មន្ត្រីបច្ចេកទេស
                 </th>
                 {dates.map((dateStr, idx) => {
@@ -960,7 +964,7 @@ export default function ExportReportModal({
                     </th>
                   );
                 })}
-                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[78px] text-[9.5px]">
+                <th rowSpan={2} className="bg-white text-black border border-slate-300 px-1 py-1 text-center font-bold min-w-[70px] text-[9px]">
                   អត្រា Post
                 </th>
               </tr>
@@ -973,7 +977,7 @@ export default function ExportReportModal({
                   return (
                     <th
                       key={`${dateStr}-sub`}
-                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center text-[7.5px] font-bold ${
+                      className={`print-day-col border border-slate-300 px-0.5 py-0.5 text-center text-[7px] font-bold ${
                         isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
                       }`}
                     >
@@ -1008,7 +1012,7 @@ export default function ExportReportModal({
 
                   if (hasRemark) {
                     content = remarkText;
-                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[7px]';
+                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6.5px]';
                   } else if (dateStr <= todayStr) {
                     if (isWeekend) {
                       if (isPosted) {
@@ -1016,7 +1020,7 @@ export default function ExportReportModal({
                         cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
                       } else {
                         content = 'ស-អ';
-                        cellStyle = 'bg-slate-50 text-slate-400 text-[7px]';
+                        cellStyle = 'bg-slate-50 text-slate-400 text-[6.5px]';
                       }
                     } else if (isPosted) {
                       content = '✔';
@@ -1047,16 +1051,16 @@ export default function ExportReportModal({
 
                 return (
                   <tr key={b.id}>
-                    <td className="border border-slate-300 px-1.5 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8.5px]">
+                    <td className="border border-slate-300 px-1 py-0.5 font-bold text-slate-900 whitespace-nowrap text-[8px]">
                       {b.nameKh}
                     </td>
-                    <td className="border border-slate-300 px-1.5 py-0.5 text-slate-700 whitespace-nowrap text-[8px]">
+                    <td className="border border-slate-300 px-1 py-0.5 text-slate-700 whitespace-nowrap text-[7.5px]">
                       {bStaff}
                     </td>
                     {dayCells}
                     <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold whitespace-nowrap leading-tight ${rateStyle}`}>
-                      <span className="text-[8px]">{rate}%</span>{' '}
-                      <span className="text-[7px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
+                      <span className="text-[7.5px]">{rate}%</span>{' '}
+                      <span className="text-[6.5px] font-semibold">({postedCount}/{totalWorkingDays} ថ្ងៃ)</span>
                     </td>
                   </tr>
                 );
@@ -1066,7 +1070,7 @@ export default function ExportReportModal({
 
           {/* Signature Block */}
           <div className="print-footer-block mt-2.5 flex justify-end">
-            <div className="text-center text-[9.5px] min-w-[220px] leading-snug">
+            <div className="text-center text-[9.5px] min-w-[200px] leading-snug">
               <div className="italic text-slate-600">
                 ធ្វើនៅភ្នំពេញ, ថ្ងៃទី {printDayKh} ខែ {printMonthKh} ឆ្នាំ {printYearKh}
               </div>
