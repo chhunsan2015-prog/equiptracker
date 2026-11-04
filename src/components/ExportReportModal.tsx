@@ -5,9 +5,11 @@
 
 import React from 'react';
 import XLSX from 'xlsx-js-style';
+import JSZip from 'jszip';
 import { Branch, DailyReport, StaffAssignment } from '../types.ts';
 import { FileSpreadsheet, Copy, X, Check, Award, AlertCircle, FileText, Download } from 'lucide-react';
 import { getWorkingDaysInMonth } from '../constants.ts';
+import gdtLogoUrl from '../gdtlogo.png';
 
 interface ExportReportModalProps {
   isOpen: boolean;
@@ -95,9 +97,9 @@ export default function ExportReportModal({
   const attentionBranches = branchReportsSummary.filter(b => b.rate < 60);
 
   /**
-   * Action function: Export grid to a clean and styled Excel (.xlsx) file using xlsx-js-style
+   * Action function: Export grid to a clean and styled Excel (.xlsx) file using xlsx-js-style + embedded GDT Logo
    */
-  const handleDownloadCSV = () => {
+  const handleDownloadCSV = async () => {
     try {
       // Rearrange branches so that OMC, KRT, KEP, PST, PLN are at the very bottom rows
       const bottomBranchIds = ['PROV_OMC', 'PROV_KRT', 'PROV_KEP', 'PROV_PST', 'PROV_PLN'];
@@ -150,31 +152,70 @@ export default function ExportReportModal({
       };
 
       const rateColIndex = 2 + daysInMonth;
+      const rightStartCol = Math.max(18, rateColIndex - 9);
 
-      // Title & Subtitle Row
-      setCell(0, 0, "របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
-        font: { sz: 16, bold: true, color: { rgb: '0F172A' } },
+      // =========================================================================
+      // 1. TOP OFFICIAL HEADER (Rows 0, 1, 2, 3)
+      // =========================================================================
+      // Left Section (3 Lines, Aligned Left)
+      setCell(0, 0, "អគ្គនាយកដ្ឋានពន្ធដារ", {
+        font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+      setCell(0, 1, "នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន", {
+        font: { sz: 10.5, bold: true, color: { rgb: '1E293B' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+      setCell(0, 2, "ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន", {
+        font: { sz: 10, bold: true, color: { rgb: '334155' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+
+      // Right Section (2 Lines + Ornamental Underline, Aligned Center)
+      setCell(rightStartCol, 0, "ព្រះរាជាណាចក្រកម្ពុជា", {
+        font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+      setCell(rightStartCol, 1, "ជាតិ សាសនា ព្រះមហាក្សត្រ", {
+        font: { sz: 10.5, bold: true, color: { rgb: '0F172A' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+      setCell(rightStartCol, 2, "────────── ❖ ──────────", {
+        font: { sz: 9.5, bold: true, color: { rgb: '475569' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
-      setCell(0, 1, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
-        font: { sz: 11, italic: true, color: { rgb: '475569' } },
+      // =========================================================================
+      // 2. REPORT TITLE & SUBTITLE (Rows 4 & 5 - Centered below Logo)
+      // =========================================================================
+      setCell(0, 4, "របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ", {
+        font: { sz: 14, bold: true, color: { rgb: '0F172A' } },
         alignment: { horizontal: 'center', vertical: 'center' }
       });
 
-      // Legend Row (Row index 3)
-      // Legend 1: "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)" (Col A)
-      setCell(0, 3, "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)", {
+      setCell(0, 5, `ប្រចាំខែ ${khmerMonthName} ឆ្នាំ ${year}`, {
+        font: { sz: 11, bold: true, color: { rgb: '334155' } },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      });
+
+      // =========================================================================
+      // 3. SUB-TITLE & LEGEND ROW (Rows 6 & 7 - Above Table)
+      // =========================================================================
+      setCell(0, 6, "Telegram Group: ITS-SITE-SUPPORT-TEAM", {
+        font: { sz: 10, bold: true, color: { rgb: '0F172A' } },
+        alignment: { horizontal: 'left', vertical: 'center' }
+      });
+
+      // Legend Row (Row index 7)
+      setCell(0, 7, "☑ បានរាយការណ៍ក្នុង Telegram (POSTED)", {
         font: { sz: 9.5, bold: true, color: { rgb: '10B981' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
-      // Legend 2: "☒ អត់បានរាយការណ៍ (NOT POSTED)" (Col J / Index 9)
-      setCell(9, 3, "☒ អត់បានរាយការណ៍ (NOT POSTED)", {
+      setCell(9, 7, "☒ អត់បានរាយការណ៍ (NOT POSTED)", {
         font: { sz: 9.5, bold: true, color: { rgb: 'EF4444' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
-      // Legend 3: "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)" (Col S / Index 18)
-      setCell(18, 3, "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)", {
+      setCell(18, 7, "☐ មិនទាន់មានទិន្នន័យ (No Data / Out of range)", {
         font: { sz: 9.5, bold: true, color: { rgb: '64748B' } },
         alignment: { horizontal: 'left', vertical: 'center' }
       });
@@ -190,7 +231,7 @@ export default function ExportReportModal({
       // Header style
       const mainHeaderStyle = {
         fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: '1E293B' } },
-        font: { sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
+        font: { sz: 10.5, bold: true, color: { rgb: 'FFFFFF' } },
         alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
         border: tableBorder
       };
@@ -209,12 +250,18 @@ export default function ExportReportModal({
         border: tableBorder
       };
 
-      // Write table headers (Row index 4 and Row index 5)
-      setCell(0, 4, "សាខាខេត្ត/ខណ្ឌ (Branch Name)", mainHeaderStyle);
-      setCell(0, 5, "", mainHeaderStyle);
+      // =========================================================================
+      // 4. TABLE HEADERS (Row index 8 and Row index 9)
+      // =========================================================================
+      const tableHeaderRow = 8;
+      const tableSubHeaderRow = 9;
+      const dataStartRow = 10;
 
-      setCell(1, 4, "មន្ត្រីបង្គោល (Technical Staff)", mainHeaderStyle);
-      setCell(1, 5, "", mainHeaderStyle);
+      setCell(0, tableHeaderRow, "សាខាពន្ធដារ", mainHeaderStyle);
+      setCell(0, tableSubHeaderRow, "", mainHeaderStyle);
+
+      setCell(1, tableHeaderRow, "មន្ត្រីបច្ចេកទេស", mainHeaderStyle);
+      setCell(1, tableSubHeaderRow, "", mainHeaderStyle);
 
       // Write Day Headers
       for (let i = 0; i < daysInMonth; i++) {
@@ -230,28 +277,43 @@ export default function ExportReportModal({
         const dayStyle = isWeekend ? weekendHeaderStyle : weekdayHeaderStyle;
         const weekendIndicator = isWeekend ? (isSaturday ? 'ស' : 'អ') : '';
 
-        setCell(colIndex, 4, dayNum, dayStyle);
-        setCell(colIndex, 5, weekendIndicator, dayStyle);
+        setCell(colIndex, tableHeaderRow, dayNum, dayStyle);
+        setCell(colIndex, tableSubHeaderRow, weekendIndicator, dayStyle);
       }
 
-      setCell(rateColIndex, 4, "អត្រា Post", mainHeaderStyle);
-      setCell(rateColIndex, 5, "", mainHeaderStyle);
+      setCell(rateColIndex, tableHeaderRow, "អត្រា Post", mainHeaderStyle);
+      setCell(rateColIndex, tableSubHeaderRow, "", mainHeaderStyle);
 
       // Initialize merges list
       const merges = [
-        { s: { c: 0, r: 0 }, e: { c: rateColIndex, r: 0 } }, // title merge
-        { s: { c: 0, r: 1 }, e: { c: rateColIndex, r: 1 } }, // subtitle merge
-        { s: { c: 0, r: 3 }, e: { c: 8, r: 3 } }, // legend 1
-        { s: { c: 9, r: 3 }, e: { c: 17, r: 3 } }, // legend 2
-        { s: { c: 18, r: 3 }, e: { c: 28, r: 3 } }, // legend 3
-        { s: { c: 0, r: 4 }, e: { c: 0, r: 5 } }, // branch header
-        { s: { c: 1, r: 4 }, e: { c: 1, r: 5 } }, // staff header
-        { s: { c: rateColIndex, r: 4 }, e: { c: rateColIndex, r: 5 } }, // rate header
+        // Top Header Left (Rows 0, 1, 2)
+        { s: { c: 0, r: 0 }, e: { c: 8, r: 0 } },
+        { s: { c: 0, r: 1 }, e: { c: 8, r: 1 } },
+        { s: { c: 0, r: 2 }, e: { c: 8, r: 2 } },
+        // Top Header Center (Logo area across Rows 0-3)
+        { s: { c: 9, r: 0 }, e: { c: rightStartCol - 1, r: 3 } },
+        // Top Header Right (Rows 0, 1, 2)
+        { s: { c: rightStartCol, r: 0 }, e: { c: rateColIndex, r: 0 } },
+        { s: { c: rightStartCol, r: 1 }, e: { c: rateColIndex, r: 1 } },
+        { s: { c: rightStartCol, r: 2 }, e: { c: rateColIndex, r: 2 } },
+        // Report Title & Subtitle (Rows 4 & 5)
+        { s: { c: 0, r: 4 }, e: { c: rateColIndex, r: 4 } },
+        { s: { c: 0, r: 5 }, e: { c: rateColIndex, r: 5 } },
+        // Telegram Group Sub-title (Row 6)
+        { s: { c: 0, r: 6 }, e: { c: 8, r: 6 } },
+        // Legend Row (Row 7)
+        { s: { c: 0, r: 7 }, e: { c: 8, r: 7 } },
+        { s: { c: 9, r: 7 }, e: { c: 17, r: 7 } },
+        { s: { c: 18, r: 7 }, e: { c: 28, r: 7 } },
+        // Table Headers (Rows 8 & 9)
+        { s: { c: 0, r: tableHeaderRow }, e: { c: 0, r: tableSubHeaderRow } }, // branch header
+        { s: { c: 1, r: tableHeaderRow }, e: { c: 1, r: tableSubHeaderRow } }, // staff header
+        { s: { c: rateColIndex, r: tableHeaderRow }, e: { c: rateColIndex, r: tableSubHeaderRow } }, // rate header
       ];
 
-      // Write table rows (Row index 6 onwards)
+      // Write table rows (Row index dataStartRow onwards)
       sortedBranchesForExcel.forEach((b, bIdx) => {
-        const rowIndex = 6 + bIdx;
+        const rowIndex = dataStartRow + bIdx;
         const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
         let postedCount = 0;
 
@@ -356,7 +418,7 @@ export default function ExportReportModal({
       });
 
       // Write Signature and Date Table
-      const footerRowStart = 6 + sortedBranchesForExcel.length + 2;
+      const footerRowStart = dataStartRow + sortedBranchesForExcel.length + 2;
 
       // "ធ្វើនៅភ្នំពេញ, ថ្ងៃទី..." at footerRowStart
       const footerText = `ធ្វើនៅភ្នំពេញ, ថ្ងៃទី ${khmerDay} ខែ ${khmerMonthNameToday} ឆ្នាំ ${khmerYear}`;
@@ -387,8 +449,8 @@ export default function ExportReportModal({
       
       // Column Widths
       const colWidths = [
-        { wch: 25 }, // Column A: Branch Name
-        { wch: 18 }, // Column B: Staff Name
+        { wch: 25 }, // Column A: សាខាពន្ធដារ
+        { wch: 18 }, // Column B: មន្ត្រីបច្ចេកទេស
       ];
       for (let i = 0; i < daysInMonth; i++) {
         colWidths.push({ wch: 4.8 }); // Days columns
@@ -398,12 +460,16 @@ export default function ExportReportModal({
 
       // Row Heights
       const rowHeights = [
-        { hpt: 35 }, // Row 1 (Title)
-        { hpt: 22 }, // Row 2 (Subtitle)
-        { hpt: 15 }, // Row 3 (Spacer)
-        { hpt: 20 }, // Row 4 (Legend)
-        { hpt: 22 }, // Row 5 (Header Row 1)
-        { hpt: 18 }, // Row 6 (Header Row 2)
+        { hpt: 22 }, // Row 0 (Official Header Line 1)
+        { hpt: 20 }, // Row 1 (Official Header Line 2)
+        { hpt: 20 }, // Row 2 (Official Header Line 3)
+        { hpt: 18 }, // Row 3 (Logo bottom spacing)
+        { hpt: 28 }, // Row 4 (Report Title)
+        { hpt: 22 }, // Row 5 (Report Subtitle)
+        { hpt: 20 }, // Row 6 (Telegram Group Sub-title)
+        { hpt: 20 }, // Row 7 (Legend)
+        { hpt: 22 }, // Row 8 (Table Header Row 1)
+        { hpt: 18 }, // Row 9 (Table Header Row 2)
       ];
       for (let i = 0; i < sortedBranchesForExcel.length; i++) {
         rowHeights.push({ hpt: 38, hpx: 48 }); // Branch rows - taller height for 2-line Khmer text in Rate column
@@ -415,9 +481,121 @@ export default function ExportReportModal({
       const lastRowNumber = footerRowStart + 6;
       ws['!ref'] = `A1:${lastColLetter}${lastRowNumber}`;
 
-      // Append sheet to workbook and save as XLSX
+      // Append sheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, "របាយការណ៍សង្ខេប");
-      XLSX.writeFile(wb, `Daily_Equipment_Report_Summary_${selectedMonth}.xlsx`);
+
+      const fileName = `Daily_Equipment_Report_Summary_${selectedMonth}.xlsx`;
+
+      // =========================================================================
+      // 5. EMBED GDT LOGO (gdtlogo.png) INTO CENTER OF TOP HEADER (Rows 0-3)
+      // =========================================================================
+      try {
+        const xlsxArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const zip = await JSZip.loadAsync(xlsxArrayBuffer);
+        const logoResponse = await fetch(gdtLogoUrl);
+        const logoBuffer = await logoResponse.arrayBuffer();
+
+        // Add logo image binary to xl/media/image1.png
+        zip.file('xl/media/image1.png', logoBuffer);
+
+        // Position logo at visual center of the sheet (Row 0, Center Column)
+        const logoCenterCol = Math.max(12, Math.floor(daysInMonth / 2));
+        const widthEmu = 105 * 9525;  // 105px width (preserves 282x220 aspect ratio)
+        const heightEmu = 82 * 9525;  // 82px height (fits cleanly inside Rows 0-3)
+        const colOffEmu = 4 * 9525;
+        const rowOffEmu = 4 * 9525;
+
+        const drawingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <xdr:oneCellAnchor>
+    <xdr:from>
+      <xdr:col>${logoCenterCol}</xdr:col>
+      <xdr:colOff>${colOffEmu}</xdr:colOff>
+      <xdr:row>0</xdr:row>
+      <xdr:rowOff>${rowOffEmu}</xdr:rowOff>
+    </xdr:from>
+    <xdr:ext cx="${widthEmu}" cy="${heightEmu}"/>
+    <xdr:pic>
+      <xdr:nvPicPr>
+        <xdr:cNvPr id="2" name="GDT Logo"/>
+        <xdr:cNvPicPr>
+          <a:picLocks noChangeAspect="1"/>
+        </xdr:cNvPicPr>
+      </xdr:nvPicPr>
+      <xdr:blipFill>
+        <a:blip r:embed="rId1"/>
+        <a:stretch>
+          <a:fillRect/>
+        </a:stretch>
+      </xdr:blipFill>
+      <xdr:spPr>
+        <a:xfrm>
+          <a:off x="0" y="0"/>
+          <a:ext cx="${widthEmu}" cy="${heightEmu}"/>
+        </a:xfrm>
+        <a:prstGeom prst="rect">
+          <a:avLst/>
+        </a:prstGeom>
+      </xdr:spPr>
+    </xdr:pic>
+    <xdr:clientData/>
+  </xdr:oneCellAnchor>
+</xdr:wsDr>`;
+
+        const drawingRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
+</Relationships>`;
+
+        const sheetRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/>
+</Relationships>`;
+
+        zip.file('xl/drawings/drawing1.xml', drawingXml);
+        zip.file('xl/drawings/_rels/drawing1.xml.rels', drawingRelsXml);
+        zip.file('xl/worksheets/_rels/sheet1.xml.rels', sheetRelsXml);
+
+        // Register drawing1.xml in [Content_Types].xml
+        const contentTypesFile = zip.file('[Content_Types].xml');
+        if (contentTypesFile) {
+          let contentTypesXml = await contentTypesFile.async('string');
+          if (!contentTypesXml.includes('/xl/drawings/drawing1.xml')) {
+            contentTypesXml = contentTypesXml.replace(
+              '</Types>',
+              '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>'
+            );
+            zip.file('[Content_Types].xml', contentTypesXml);
+          }
+        }
+
+        // Link drawing rId1 in xl/worksheets/sheet1.xml
+        const sheetFile = zip.file('xl/worksheets/sheet1.xml');
+        if (sheetFile) {
+          let sheetXml = await sheetFile.async('string');
+          if (!sheetXml.includes('<drawing ')) {
+            sheetXml = sheetXml.replace('</worksheet>', '<drawing r:id="rId1"/></worksheet>');
+            zip.file('xl/worksheets/sheet1.xml', sheetXml);
+          }
+        }
+
+        const finalBlob = await zip.generateAsync({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        const downloadUrl = URL.createObjectURL(finalBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+      } catch (logoErr) {
+        console.warn('Fallback to standard XLSX write without logo:', logoErr);
+        XLSX.writeFile(wb, fileName);
+      }
     } catch (e) {
       alert('កំហុសពេលទាញយក Excel៖ ' + String(e));
     }
