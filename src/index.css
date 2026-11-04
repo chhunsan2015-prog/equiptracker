@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Kantumruy Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: 'Khmer OS Siemreap', 'Siemreap', 'Kantumruy Pro', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Khmer OS Siemreap', 'Siemreap', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif !important;
+}
+
+button,
+input,
+select,
+textarea,
+.font-sans,
+.font-mono {
+  font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif !important;
 }
 
