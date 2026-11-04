@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import XLSX from 'xlsx-js-style';
 import JSZip from 'jszip';
 import { Branch, DailyReport, StaffAssignment } from '../types.ts';
-import { FileSpreadsheet, Copy, X, Check, Award, AlertCircle, FileText, Download } from 'lucide-react';
+import { FileSpreadsheet, Printer, X, Check, Award, AlertCircle, FileText, Download } from 'lucide-react';
 import { getWorkingDaysInMonth } from '../constants.ts';
 import gdtLogoUrl from '../gdtlogo.png';
 
@@ -630,38 +631,36 @@ export default function ExportReportModal({
   };
 
   /**
-   * Action function: Generates a beautiful text report summary format to copy for Telegram
+   * Action function: Print / Save report as PDF
    */
-  const handleCopyTelegramSummary = () => {
-    try {
-      const topOfficesText = outstandingBranches.length > 0 
-        ? outstandingBranches.map(o => `• ${o.branchName} (${o.staff})`).slice(0, 8).join('\n') + (outstandingBranches.length > 8 ? `\n• និងផ្សេងៗទៀត...` : '')
-        : 'គ្មាន';
-
-      const needsAttentionText = attentionBranches.length > 0
-        ? attentionBranches.map(a => `• ${a.branchName} (${a.rate}% - ${a.staff})`).slice(0, 8).join('\n') + (attentionBranches.length > 8 ? `\n• និងផ្សេងៗទៀត...` : '')
-        : 'គ្មាន';
-
-      const telegramText = `📊 **របាយការណ៍សង្ខេបការត្រួតពិនិត្យឧបករណ៍ប្រចាំខែ ${selectedMonth}**
-
-🗓 ខែត្រួតពិនិត្យ៖ ${selectedMonth}
-🏦 ចំនួនសាខាបញ្ជូនទិន្នន័យ៖ ${branches.length} សាខា
-✔️ អត្រាការ Post សរុបរួម៖ **${overallRate}%** (${totalPostedCount}/${totalValidDays} ថ្ងៃ)
-
-🏆 **សាខាគំរូដែលបានបោះផ្សាយព័ត៌មានគ្រប់ ១០០% (Outstanding Branches)៖**
-${topOfficesText}
-
-⚠️ **សាខាដែលមានអត្រាទាប ឬតម្រូវឲ្យយកចិត្តទុកដាក់ (<60%)៖**
-${needsAttentionText}
-
-សេចក្តីរាយការណ៍ចេញពីកម្មវិធី៖ "ប្រព័ន្ធតាមដានឧបករណ៍បច្ចេកវិទ្យាព័ត៌មាន សាខាពន្ធដារ"`;
-
-      navigator.clipboard.writeText(telegramText);
-      alert('📋 បានចម្លងសេចក្តីសង្ខេប Telegram ទៅក្នុង Clipboard!');
-    } catch (e) {
-      alert('កំហុសពេលចម្លង៖ ' + String(e));
-    }
+  const handlePrintPDF = () => {
+    window.print();
   };
+
+  // Prepare data for the printable PDF layout (matching the official GDT monthly report)
+  const khmerMonthsList = [
+    'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា',
+    'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+  ];
+  const khmerMonthNameForPrint = khmerMonthsList[month - 1] || '';
+  const khmerNumbersList = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+  const toKhmerNumberForPrint = (num: number | string) =>
+    String(num).split('').map(c => {
+      const idx = parseInt(c, 10);
+      return isNaN(idx) ? c : khmerNumbersList[idx];
+    }).join('');
+  const nowDate = new Date();
+  const printDayKh = toKhmerNumberForPrint(nowDate.getDate());
+  const printMonthKh = khmerMonthsList[nowDate.getMonth()];
+  const printYearKh = toKhmerNumberForPrint(nowDate.getFullYear());
+
+  const bottomIdsForPrint = ['PROV_OMC', 'PROV_KRT', 'PROV_KEP', 'PROV_PST', 'PROV_PLN'];
+  const sortedBranchesForPrint = [
+    ...branches.filter(b => !bottomIdsForPrint.includes(b.id)),
+    ...branches
+      .filter(b => bottomIdsForPrint.includes(b.id))
+      .sort((a, b) => bottomIdsForPrint.indexOf(a.id) - bottomIdsForPrint.indexOf(b.id))
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
@@ -676,7 +675,7 @@ ${needsAttentionText}
             <div>
               <h4 className="font-bold text-slate-800 text-sm">ទាញយករបាយការណ៍សង្ខេបប្រចាំខែ (Monthly Report Export)</h4>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                ទាញយកទិន្នន័យប្រចាំខែ <strong className="text-emerald-700">{selectedMonth}</strong> ទៅជា Excel/CSV ឬចម្លងសេចក្តីសង្ខេប Telegram។
+                ទាញយកទិន្នន័យប្រចាំខែ <strong className="text-emerald-700">{selectedMonth}</strong> ទៅជា Excel/CSV ឬបោះពុម្ពជា PDF។
               </p>
             </div>
           </div>
@@ -751,18 +750,18 @@ ${needsAttentionText}
               </div>
             </button>
 
-            {/* Telegram Clipboard Copy Trigger */}
+            {/* Print PDF Trigger */}
             <button
-              onClick={handleCopyTelegramSummary}
+              onClick={handlePrintPDF}
               className="p-4 border-2 border-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-2xl flex items-center gap-4 transition text-left cursor-pointer group"
             >
               <div className="p-3 bg-indigo-600 text-white rounded-xl shadow-md group-hover:scale-105 transition-transform">
-                <Copy className="w-5 h-5" />
+                <Printer className="w-5 h-5" />
               </div>
               <div>
-                <h5 className="font-bold text-slate-800 text-sm">ចម្លងសេចក្តីសង្ខេប Telegram (Copy Text)</h5>
+                <h5 className="font-bold text-slate-800 text-sm">បោះពុម្ពជា PDF (Print PDF)</h5>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  ចម្លងរបាយការណ៍សង្ខេបរៀបចំរួចជាស្រេច សម្រាប់យកទៅផ្ញើចូលក្នុង Telegram Group។
+                  ទាញយករបាយការណ៍នេះជាទម្រង់ឯកសារ PDF សម្រាប់បោះពុម្ពទុកជាឯកសារយោង។
                 </p>
               </div>
             </button>
@@ -830,6 +829,202 @@ ${needsAttentionText}
         </div>
 
       </div>
+
+      {/* Dedicated Printable Report View (Only visible during window.print()) */}
+      {createPortal(
+        <div id="printable-monthly-report" className="hidden print:block bg-white text-slate-900 w-full">
+          <style>{`
+            @media print {
+              @page {
+                size: A4 landscape;
+                margin: 8mm;
+              }
+              body > *:not(#printable-monthly-report) {
+                display: none !important;
+              }
+              #printable-monthly-report {
+                display: block !important;
+                width: 100% !important;
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+            }
+          `}</style>
+
+          {/* Top Official GDT Header */}
+          <div className="grid grid-cols-3 items-start mb-1">
+            <div className="text-left text-[11px] leading-relaxed">
+              <div className="font-bold text-slate-900">អគ្គនាយកដ្ឋានពន្ធដារ</div>
+              <div className="font-bold underline text-slate-900">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
+              <div className="text-slate-700">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
+            </div>
+            <div className="flex justify-center">
+              <img src={gdtLogoUrl} alt="GDT Logo" className="h-16 w-auto object-contain" />
+            </div>
+            <div className="text-center text-[11px] leading-relaxed">
+              <div className="font-bold text-xs text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
+              <div className="font-bold text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+              <div className="text-slate-700 font-bold text-[10px]">────────── ❖ ──────────</div>
+            </div>
+          </div>
+
+          {/* Report Title & Subtitle */}
+          <div className="text-center my-2">
+            <h1 className="text-sm font-bold text-slate-900">
+              របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
+            </h1>
+            <p className="text-xs font-bold text-slate-800 mt-0.5">
+              ប្រចាំខែ {khmerMonthNameForPrint} ឆ្នាំ {year}
+            </p>
+          </div>
+
+          <div className="text-[10px] font-bold text-slate-900 mb-1.5">
+            Telegram Group: ITS-SITE-SUPPORT-TEAM
+          </div>
+
+          {/* Full Monthly Summary Table */}
+          <table className="w-full border-collapse border border-slate-300 text-[9px]">
+            <thead>
+              <tr className="bg-slate-800 text-white">
+                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[110px]">
+                  សាខាពន្ធដារ
+                </th>
+                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[80px]">
+                  មន្ត្រីបច្ចេកទេស
+                </th>
+                {dates.map((dateStr, idx) => {
+                  const [y, m, dNum] = dateStr.split('-').map(Number);
+                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                  return (
+                    <th
+                      key={dateStr}
+                      className={`border border-slate-300 px-0.5 py-0.5 text-center font-bold ${
+                        isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
+                      }`}
+                    >
+                      {idx + 1}
+                    </th>
+                  );
+                })}
+                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[72px]">
+                  អត្រា Post
+                </th>
+              </tr>
+              <tr>
+                {dates.map((dateStr) => {
+                  const [y, m, dNum] = dateStr.split('-').map(Number);
+                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                  const isSaturday = dayOfWeek === 6;
+                  return (
+                    <th
+                      key={`${dateStr}-sub`}
+                      className={`border border-slate-300 px-0.5 py-0.5 text-center text-[8px] font-bold ${
+                        isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
+                      }`}
+                    >
+                      {isWeekend ? (isSaturday ? 'ស' : 'អ') : ''}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedBranchesForPrint.map((b) => {
+                const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
+                let postedCount = 0;
+
+                const dayCells = dates.map((dateStr) => {
+                  const [y, m, dNum] = dateStr.split('-').map(Number);
+                  const dayOfWeek = new Date(y, m - 1, dNum).getDay();
+                  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                  const r = reportLookup[`${dateStr}_${b.id}`];
+                  const isPosted = r && r.status === 'POSTED';
+                  const remarkText = (r?.remark || r?.note || '')
+                    .replace(/^\[REMARK:(.*?)\]\s*/s, '$1')
+                    .trim();
+                  const hasRemark = remarkText !== '' && remarkText !== 'ធម្មតា';
+
+                  if (dateStr <= todayStr && !isWeekend && isPosted) {
+                    postedCount++;
+                  }
+
+                  let content = '';
+                  let cellStyle = 'bg-white text-slate-700';
+
+                  if (hasRemark) {
+                    content = remarkText;
+                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[7px]';
+                  } else if (dateStr <= todayStr) {
+                    if (isWeekend) {
+                      if (isPosted) {
+                        content = '✔';
+                        cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
+                      } else {
+                        content = 'ស-អ';
+                        cellStyle = 'bg-slate-50 text-slate-400 text-[7px]';
+                      }
+                    } else if (isPosted) {
+                      content = '✔';
+                      cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
+                    } else if (r && r.status === 'NOT_POSTED') {
+                      content = '✘';
+                      cellStyle = 'bg-rose-100 text-rose-800 font-bold';
+                    }
+                  } else {
+                    content = '-';
+                    cellStyle = 'text-slate-300';
+                  }
+
+                  return (
+                    <td key={dateStr} className={`border border-slate-300 text-center px-0.5 py-0.5 ${cellStyle}`}>
+                      {content}
+                    </td>
+                  );
+                });
+
+                const rate = totalWorkingDays > 0 ? Math.round((postedCount / totalWorkingDays) * 100) : 0;
+                const rateStyle =
+                  rate >= 90
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : rate >= 60
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-rose-100 text-rose-800';
+
+                return (
+                  <tr key={b.id}>
+                    <td className="border border-slate-300 px-1.5 py-0.5 font-bold text-slate-900">
+                      {b.nameKh}
+                    </td>
+                    <td className="border border-slate-300 px-1.5 py-0.5 text-slate-700">
+                      {bStaff}
+                    </td>
+                    {dayCells}
+                    <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold leading-tight ${rateStyle}`}>
+                      <div>{rate}%</div>
+                      <div className="text-[7.5px]">({postedCount}/{totalWorkingDays} ថ្ងៃ)</div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Signature Block */}
+          <div className="mt-4 flex justify-end">
+            <div className="text-center text-[10px] min-w-[220px]">
+              <div className="italic text-slate-600">
+                ធ្វើនៅភ្នំពេញ, ថ្ងៃទី {printDayKh} ខែ {printMonthKh} ឆ្នាំ {printYearKh}
+              </div>
+              <div className="font-bold text-slate-800 mt-1">អ្នករៀបចំរបាយការណ៍</div>
+              <div className="mt-8 text-slate-400">......................................................</div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
