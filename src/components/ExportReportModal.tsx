@@ -243,8 +243,8 @@ export default function ExportReportModal({
 
       // Header style
       const mainHeaderStyle = {
-        fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: '1E293B' } },
-        font: { sz: 10.5, bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { type: 'pattern', patternType: 'solid', fgColor: { rgb: 'FFFFFF' } },
+        font: { sz: 10.5, bold: true, color: { rgb: '000000' } },
         alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
         border: tableBorder
       };
