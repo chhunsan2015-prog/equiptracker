@@ -169,21 +169,21 @@ export default function ExportReportModal({
       // =========================================================================
       // 1. TOP OFFICIAL HEADER (Rows 0, 1, 2, 3)
       // =========================================================================
-      // Left Section (3 Lines, Merged A1:D1, A2:D2, A3:D3, Aligned Left)
+      // Left Section (3 Lines, Merged A1:D1, A2:D2, A3:D3, Aligned Center)
       setCell(0, 0, "អគ្គនាយកដ្ឋានពន្ធដារ", {
         fill: headerWhiteFill,
         font: { sz: 11, bold: true, color: { rgb: '0F172A' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
+        alignment: { horizontal: 'center', vertical: 'center' }
       });
       setCell(0, 1, "នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន", {
         fill: headerWhiteFill,
         font: { sz: 10.5, bold: true, underline: true, color: { rgb: '0F172A' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
+        alignment: { horizontal: 'center', vertical: 'center' }
       });
       setCell(0, 2, "ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន", {
         fill: headerWhiteFill,
         font: { sz: 10, bold: false, color: { rgb: '334155' } },
-        alignment: { horizontal: 'left', vertical: 'center' }
+        alignment: { horizontal: 'center', vertical: 'center' }
       });
 
       // Right Section (2 Lines + Ornamental Underline, Merged & Aligned Center)
