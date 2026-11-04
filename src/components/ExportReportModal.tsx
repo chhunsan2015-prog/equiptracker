@@ -663,8 +663,8 @@ export default function ExportReportModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in print:hidden">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] print:hidden">
         
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -681,7 +681,7 @@ export default function ExportReportModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-lg transition"
+            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-lg transition print:hidden"
           >
             <X className="w-4 h-4" />
           </button>
@@ -732,12 +732,12 @@ export default function ExportReportModal({
           </div>
 
           {/* Quick Action Buttons Pane */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
             
             {/* Download CSV Trigger */}
             <button
               onClick={handleDownloadCSV}
-              className="p-4 border-2 border-emerald-500 bg-emerald-50/20 hover:bg-emerald-50/50 rounded-2xl flex items-center gap-4 transition text-left cursor-pointer group"
+              className="p-4 border-2 border-emerald-500 bg-emerald-50/20 hover:bg-emerald-50/50 rounded-2xl flex items-center gap-4 transition text-left cursor-pointer group print:hidden"
             >
               <div className="p-3 bg-emerald-600 text-white rounded-xl shadow-md group-hover:scale-105 transition-transform">
                 <Download className="w-5 h-5" />
@@ -753,7 +753,7 @@ export default function ExportReportModal({
             {/* Print PDF Trigger */}
             <button
               onClick={handlePrintPDF}
-              className="p-4 border-2 border-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-2xl flex items-center gap-4 transition text-left cursor-pointer group"
+              className="p-4 border-2 border-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-2xl flex items-center gap-4 transition text-left cursor-pointer group print:hidden"
             >
               <div className="p-3 bg-indigo-600 text-white rounded-xl shadow-md group-hover:scale-105 transition-transform">
                 <Printer className="w-5 h-5" />
@@ -819,10 +819,10 @@ export default function ExportReportModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 flex items-center justify-end bg-slate-50/50">
+        <div className="p-4 border-t border-slate-100 flex items-center justify-end bg-slate-50/50 print:hidden">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-900 border text-white rounded-xl text-xs font-bold transition cursor-pointer"
+            className="px-5 py-2 bg-slate-800 hover:bg-slate-900 border text-white rounded-xl text-xs font-bold transition cursor-pointer print:hidden"
           >
             រួចរាល់ (Done)
           </button>
@@ -837,7 +837,14 @@ export default function ExportReportModal({
             @media print {
               @page {
                 size: A4 landscape;
-                margin: 8mm;
+                margin: 10mm;
+              }
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
               }
               body > *:not(#printable-monthly-report) {
                 display: none !important;
@@ -846,40 +853,66 @@ export default function ExportReportModal({
                 display: block !important;
                 width: 100% !important;
                 background: #ffffff !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                font-size: 9px !important;
+                line-height: 1.15 !important;
+                zoom: 85%;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+              }
+              #printable-monthly-report table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+              #printable-monthly-report tr,
+              #printable-monthly-report td,
+              #printable-monthly-report th {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+              #printable-monthly-report .print-day-col {
+                padding: 0.5px 1px !important;
+                font-size: 8px !important;
+                line-height: 1.05 !important;
+              }
+              #printable-monthly-report .print-footer-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
               }
             }
           `}</style>
 
           {/* Top Official GDT Header */}
-          <div className="grid grid-cols-3 items-start mb-1">
-            <div className="text-left text-[11px] leading-relaxed">
+          <div className="grid grid-cols-3 items-start mb-0.5">
+            <div className="text-left text-[9.5px] leading-snug">
               <div className="font-bold text-slate-900">អគ្គនាយកដ្ឋានពន្ធដារ</div>
               <div className="font-bold underline text-slate-900">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
               <div className="text-slate-700">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
             </div>
             <div className="flex justify-center">
-              <img src={gdtLogoUrl} alt="GDT Logo" className="h-16 w-auto object-contain" />
+              <img src={gdtLogoUrl} alt="GDT Logo" className="h-12 w-auto object-contain" />
             </div>
-            <div className="text-center text-[11px] leading-relaxed">
-              <div className="font-bold text-xs text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
+            <div className="text-center text-[9.5px] leading-snug">
+              <div className="font-bold text-[10px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
               <div className="font-bold text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
-              <div className="text-slate-700 font-bold text-[10px]">────────── ❖ ──────────</div>
+              <div className="text-slate-700 font-bold text-[9px]">────────── ❖ ──────────</div>
             </div>
           </div>
 
           {/* Report Title & Subtitle */}
-          <div className="text-center my-2">
-            <h1 className="text-sm font-bold text-slate-900">
+          <div className="text-center my-1">
+            <h1 className="text-[11px] font-bold text-slate-900 leading-tight">
               របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
             </h1>
-            <p className="text-xs font-bold text-slate-800 mt-0.5">
+            <p className="text-[9.5px] font-bold text-slate-800 mt-0.5 leading-tight">
               ប្រចាំខែ {khmerMonthNameForPrint} ឆ្នាំ {year}
             </p>
           </div>
 
-          <div className="text-[10px] font-bold text-slate-900 mb-1.5">
+          <div className="text-[9px] font-bold text-slate-900 mb-1 leading-tight">
             Telegram Group: ITS-SITE-SUPPORT-TEAM
           </div>
 
@@ -887,10 +920,10 @@ export default function ExportReportModal({
           <table className="w-full border-collapse border border-slate-300 text-[9px]">
             <thead>
               <tr className="bg-slate-800 text-white">
-                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[110px]">
+                <th rowSpan={2} className="border border-slate-300 px-1 py-0.5 text-center font-bold min-w-[100px] text-[9px]">
                   សាខាពន្ធដារ
                 </th>
-                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[80px]">
+                <th rowSpan={2} className="border border-slate-300 px-1 py-0.5 text-center font-bold min-w-[75px] text-[9px]">
                   មន្ត្រីបច្ចេកទេស
                 </th>
                 {dates.map((dateStr, idx) => {
@@ -900,7 +933,7 @@ export default function ExportReportModal({
                   return (
                     <th
                       key={dateStr}
-                      className={`border border-slate-300 px-0.5 py-0.5 text-center font-bold ${
+                      className={`print-day-col border border-slate-300 px-0.5 py-0 text-center font-bold ${
                         isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
                       }`}
                     >
@@ -908,7 +941,7 @@ export default function ExportReportModal({
                     </th>
                   );
                 })}
-                <th rowSpan={2} className="border border-slate-300 px-1.5 py-1 text-center font-bold min-w-[72px]">
+                <th rowSpan={2} className="border border-slate-300 px-1 py-0.5 text-center font-bold min-w-[82px] text-[9px]">
                   អត្រា Post
                 </th>
               </tr>
@@ -921,7 +954,7 @@ export default function ExportReportModal({
                   return (
                     <th
                       key={`${dateStr}-sub`}
-                      className={`border border-slate-300 px-0.5 py-0.5 text-center text-[8px] font-bold ${
+                      className={`print-day-col border border-slate-300 px-0.5 py-0 text-center text-[7.5px] font-bold ${
                         isWeekend ? 'bg-slate-200 text-slate-600' : 'bg-slate-50 text-slate-800'
                       }`}
                     >
@@ -956,7 +989,7 @@ export default function ExportReportModal({
 
                   if (hasRemark) {
                     content = remarkText;
-                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[7px]';
+                    cellStyle = 'bg-rose-100 text-red-600 font-bold text-[6.5px]';
                   } else if (dateStr <= todayStr) {
                     if (isWeekend) {
                       if (isPosted) {
@@ -964,7 +997,7 @@ export default function ExportReportModal({
                         cellStyle = 'bg-emerald-100 text-emerald-800 font-bold';
                       } else {
                         content = 'ស-អ';
-                        cellStyle = 'bg-slate-50 text-slate-400 text-[7px]';
+                        cellStyle = 'bg-slate-50 text-slate-400 text-[6.5px]';
                       }
                     } else if (isPosted) {
                       content = '✔';
@@ -979,7 +1012,7 @@ export default function ExportReportModal({
                   }
 
                   return (
-                    <td key={dateStr} className={`border border-slate-300 text-center px-0.5 py-0.5 ${cellStyle}`}>
+                    <td key={dateStr} className={`print-day-col border border-slate-300 text-center whitespace-nowrap ${cellStyle}`}>
                       {content}
                     </td>
                   );
@@ -995,16 +1028,16 @@ export default function ExportReportModal({
 
                 return (
                   <tr key={b.id}>
-                    <td className="border border-slate-300 px-1.5 py-0.5 font-bold text-slate-900">
+                    <td className="border border-slate-300 px-1 py-0 font-bold text-slate-900 whitespace-nowrap text-[8.5px]">
                       {b.nameKh}
                     </td>
-                    <td className="border border-slate-300 px-1.5 py-0.5 text-slate-700">
+                    <td className="border border-slate-300 px-1 py-0 text-slate-700 whitespace-nowrap text-[8.5px]">
                       {bStaff}
                     </td>
                     {dayCells}
-                    <td className={`border border-slate-300 px-1 py-0.5 text-center font-bold leading-tight ${rateStyle}`}>
-                      <div>{rate}%</div>
-                      <div className="text-[7.5px]">({postedCount}/{totalWorkingDays} ថ្ងៃ)</div>
+                    <td className={`border border-slate-300 px-1 py-0 text-center font-bold whitespace-nowrap leading-none ${rateStyle}`}>
+                      <span className="text-[8.5px]">{rate}%</span>{' '}
+                      <span className="text-[7px] font-semibold">({postedCount}/{totalWorkingDays}ថ្ងៃ)</span>
                     </td>
                   </tr>
                 );
@@ -1013,13 +1046,13 @@ export default function ExportReportModal({
           </table>
 
           {/* Signature Block */}
-          <div className="mt-4 flex justify-end">
-            <div className="text-center text-[10px] min-w-[220px]">
+          <div className="print-footer-block mt-2 flex justify-end">
+            <div className="text-center text-[9px] min-w-[200px] leading-snug">
               <div className="italic text-slate-600">
                 ធ្វើនៅភ្នំពេញ, ថ្ងៃទី {printDayKh} ខែ {printMonthKh} ឆ្នាំ {printYearKh}
               </div>
-              <div className="font-bold text-slate-800 mt-1">អ្នករៀបចំរបាយការណ៍</div>
-              <div className="mt-8 text-slate-400">......................................................</div>
+              <div className="font-bold text-slate-800 mt-0.5">អ្នករៀបចំរបាយការណ៍</div>
+              <div className="mt-5 text-slate-400">......................................................</div>
             </div>
           </div>
         </div>,
