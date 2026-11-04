@@ -959,6 +959,10 @@ export default function ExportReportModal({
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
+              #printable-monthly-report .print-muol-light {
+                font-family: 'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive !important;
+                font-weight: normal !important;
+              }
             }
           `}</style>
 
@@ -967,8 +971,18 @@ export default function ExportReportModal({
             {/* Left Block: Shifted down ~2 rows & center-aligned like Excel A3:D5 */}
             <div className="pt-7 flex justify-start">
               <div className="text-center text-[11px] leading-relaxed min-w-[230px]">
-                <div className="font-bold text-slate-900 text-[12px]">អគ្គនាយកដ្ឋានពន្ធដារ</div>
-                <div className="font-bold underline text-slate-900 text-[11.5px]">នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន</div>
+                <div
+                  className="print-muol-light font-normal text-slate-900 text-[12px]"
+                  style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+                >
+                  អគ្គនាយកដ្ឋានពន្ធដារ
+                </div>
+                <div
+                  className="print-muol-light font-normal underline text-slate-900 text-[11.5px]"
+                  style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+                >
+                  នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន
+                </div>
                 <div className="text-slate-700 text-[11px]">ការិយាល័យសេវាកម្មបច្ចេកវិទ្យាព័ត៌មាន</div>
               </div>
             </div>
@@ -976,7 +990,10 @@ export default function ExportReportModal({
             {/* Center Block: GDT Logo + Report Title & Subtitle directly centered underneath */}
             <div className="flex flex-col items-center justify-start text-center">
               <img src={gdtLogoUrl} alt="GDT Logo" className="h-16 w-auto object-contain mb-1.5" />
-              <h1 className="text-[15px] font-bold text-slate-900 leading-tight whitespace-nowrap">
+              <h1
+                className="print-muol-light font-normal text-[15px] text-slate-900 leading-tight whitespace-nowrap"
+                style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+              >
                 របាយការណ៍សង្ខេបស្តីពី ការត្រួតពិនិត្យឧបករណ៍ប្រចាំថ្ងៃ
               </h1>
               <p className="text-[12px] font-bold text-slate-800 mt-1 leading-tight">
@@ -987,8 +1004,18 @@ export default function ExportReportModal({
             {/* Right Block: At very top & center-aligned */}
             <div className="pt-0 flex justify-end">
               <div className="text-center text-[11px] leading-relaxed min-w-[230px]">
-                <div className="font-bold text-[12.5px] text-slate-900">ព្រះរាជាណាចក្រកម្ពុជា</div>
-                <div className="font-bold text-[12px] text-slate-900">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                <div
+                  className="print-muol-light font-normal text-[12.5px] text-slate-900"
+                  style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+                >
+                  ព្រះរាជាណាចក្រកម្ពុជា
+                </div>
+                <div
+                  className="print-muol-light font-normal text-[12px] text-slate-900"
+                  style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+                >
+                  ជាតិ សាសនា ព្រះមហាក្សត្រ
+                </div>
                 <div className="text-slate-700 font-bold text-[10px]">────────── ❖ ──────────</div>
               </div>
             </div>
