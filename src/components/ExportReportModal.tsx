@@ -393,7 +393,7 @@ export default function ExportReportModal({
       for (let i = 0; i < daysInMonth; i++) {
         colWidths.push({ wch: 4.8 }); // Days columns
       }
-      colWidths.push({ wch: 16 }); // Rate Column
+      colWidths.push({ wch: 20 }); // Rate Column
       ws['!cols'] = colWidths;
 
       // Row Heights
@@ -406,7 +406,7 @@ export default function ExportReportModal({
         { hpt: 18 }, // Row 6 (Header Row 2)
       ];
       for (let i = 0; i < sortedBranchesForExcel.length; i++) {
-        rowHeights.push({ hpt: 28 }); // Branch rows
+        rowHeights.push({ hpt: 38, hpx: 48 }); // Branch rows - taller height for 2-line Khmer text in Rate column
       }
       ws['!rows'] = rowHeights;
 
