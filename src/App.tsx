@@ -567,8 +567,11 @@ export default function App() {
               />
             </div>
             <div>
-              <h1 className="font-bold text-base md:text-lg tracking-tight text-amber-200">
-                ប្រព័ន្ធកម្មវិធីតាមដានក្រុមការងារ និងការរាយការណ៍ឧបករណ៍
+              <h1
+                className="font-normal font-['Khmer_OS_Muol_Light'] text-sm md:text-base leading-relaxed tracking-normal text-amber-200"
+                style={{ fontFamily: "'Khmer OS Muol Light', 'Khmer OS Muol', 'Moul', cursive", fontWeight: 'normal' }}
+              >
+                ប្រព័ន្ធកត់ត្រា និងត្រួតពិនិត្យឧបករណ៍បច្ចេកវិទ្យាព័ត៌មាន
               </h1>
               <p className="text-[11px] text-emerald-100 font-medium">
                 សាខាពន្ធដារខេត្ត-ខណ្ឌ
