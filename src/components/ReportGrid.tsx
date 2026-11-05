@@ -62,9 +62,23 @@ export default function ReportGrid({
     return lookup;
   }, [reports]);
 
-  // Filter branches based on category & search query and sort requested ones to the bottom
+  // Sort branches so all Khan branches ('khan' or containing 'ខណ្ឌ') appear at the top
+  // and all Provincial branches ('province') appear at the bottom, without mutating original state
+  const sortedBranches = useMemo(() => {
+    return [...branches].sort((a, b) => {
+      const aIsKhan = a.type === 'khan' || a.nameKh.includes('ខណ្ឌ');
+      const bIsKhan = b.type === 'khan' || b.nameKh.includes('ខណ្ឌ');
+
+      if (aIsKhan && !bIsKhan) return -1;
+      if (!aIsKhan && bIsKhan) return 1;
+
+      return a.nameKh.localeCompare(b.nameKh, 'km');
+    });
+  }, [branches]);
+
+  // Filter branches based on category & search query while preserving sorted order
   const filteredBranches = useMemo(() => {
-    const list = branches.filter(b => {
+    return sortedBranches.filter(b => {
       // Category filter
       if (filterType === 'province' && b.type !== 'province') return false;
       if (filterType === 'khan' && b.type !== 'khan') return false;
@@ -79,21 +93,7 @@ export default function ReportGrid({
         staffInfo.toLowerCase().includes(q)
       );
     });
-
-    const bottomBranchIds = ['PROV_PLN', 'PROV_KRT', 'PROV_PST', 'PROV_KEP', 'PROV_OMC'];
-
-    return [...list].sort((a, b) => {
-      const aIsBottom = bottomBranchIds.includes(a.id);
-      const bIsBottom = bottomBranchIds.includes(b.id);
-
-      if (aIsBottom && !bIsBottom) return 1;
-      if (!aIsBottom && bIsBottom) return -1;
-      if (aIsBottom && bIsBottom) {
-        return bottomBranchIds.indexOf(a.id) - bottomBranchIds.indexOf(b.id);
-      }
-      return 0;
-    });
-  }, [branches, filterType, searchQuery, staff]);
+  }, [sortedBranches, filterType, searchQuery, staff]);
 
   // Calculate stats for each branch in the selected month
   const branchStats = useMemo(() => {
@@ -347,7 +347,7 @@ export default function ReportGrid({
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         selectedMonth={selectedMonth}
-        branches={branches}
+        branches={sortedBranches}
         reports={reports}
         staff={staff}
       />

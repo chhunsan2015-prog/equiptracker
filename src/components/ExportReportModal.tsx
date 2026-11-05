@@ -52,11 +52,22 @@ export default function ExportReportModal({
     reportLookup[`${r.date}_${r.branchId}`] = r;
   });
 
+  // Sort branches so Khan branches appear at the top and Provincial branches appear at the bottom
+  const sortedBranches = [...branches].sort((a, b) => {
+    const aIsKhan = a.type === 'khan' || a.nameKh.includes('ខណ្ឌ');
+    const bIsKhan = b.type === 'khan' || b.nameKh.includes('ខណ្ឌ');
+
+    if (aIsKhan && !bIsKhan) return -1;
+    if (!aIsKhan && bIsKhan) return 1;
+
+    return a.nameKh.localeCompare(b.nameKh, 'km');
+  });
+
   // Calculate statistics for the report preview
   const totalWorkingDays = getWorkingDaysInMonth(year, month);
   let totalPostedCount = 0;
 
-  const branchReportsSummary = branches.map(b => {
+  const branchReportsSummary = sortedBranches.map(b => {
     const bStaff = staff.find(s => s.branchId === b.id)?.staffNames || b.defaultStaff;
     let posted = 0;
 
@@ -89,7 +100,7 @@ export default function ExportReportModal({
     };
   });
 
-  const totalValidDays = branches.length * totalWorkingDays;
+  const totalValidDays = sortedBranches.length * totalWorkingDays;
   const overallRate = totalValidDays > 0 ? Math.round((totalPostedCount / totalValidDays) * 100) : 0;
 
   // Outstanding branches (100% rate)
@@ -102,17 +113,8 @@ export default function ExportReportModal({
    */
   const handleDownloadCSV = async () => {
     try {
-      // Rearrange branches so that OMC, KRT, KEP, PST, PLN are at the very bottom rows
-      const bottomBranchIds = ['PROV_OMC', 'PROV_KRT', 'PROV_KEP', 'PROV_PST', 'PROV_PLN'];
-      const bottomBranchesList = branches.filter(b => bottomBranchIds.includes(b.id));
-      const otherBranches = branches.filter(b => !bottomBranchIds.includes(b.id));
-
-      // Sort the bottom branches to match the exact order: Oddar Meanchey, Kratie, Kep, Pursat, Pailin
-      bottomBranchesList.sort((a, b) => {
-        return bottomBranchIds.indexOf(a.id) - bottomBranchIds.indexOf(b.id);
-      });
-
-      const sortedBranchesForExcel = [...otherBranches, ...bottomBranchesList];
+      // Use the same sorted branches (Khan branches at the top, Provincial branches at the bottom)
+      const sortedBranchesForExcel = sortedBranches;
 
       // Format current date to Khmer characters
       const khmerMonths = [
@@ -481,7 +483,7 @@ export default function ExportReportModal({
       ws['!cols'] = colWidths;
 
       // Row Heights
-      const rowHeights = [
+      const rowHeights: Array<{ hpt: number; hpx?: number }> = [
         { hpt: 22 }, // Row 0 (Official Header Line 1)
         { hpt: 20 }, // Row 1 (Official Header Line 2)
         { hpt: 20 }, // Row 2 (Official Header Line 3)
@@ -666,13 +668,7 @@ export default function ExportReportModal({
   const printMonthKh = khmerMonthsList[nowDate.getMonth()];
   const printYearKh = toKhmerNumberForPrint(nowDate.getFullYear());
 
-  const bottomIdsForPrint = ['PROV_OMC', 'PROV_KRT', 'PROV_KEP', 'PROV_PST', 'PROV_PLN'];
-  const sortedBranchesForPrint = [
-    ...branches.filter(b => !bottomIdsForPrint.includes(b.id)),
-    ...branches
-      .filter(b => bottomIdsForPrint.includes(b.id))
-      .sort((a, b) => bottomIdsForPrint.indexOf(a.id) - bottomIdsForPrint.indexOf(b.id))
-  ];
+  const sortedBranchesForPrint = sortedBranches;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in print:hidden">

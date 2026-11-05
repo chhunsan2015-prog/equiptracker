@@ -52,12 +52,13 @@ export default function DashboardStats({
       }
     });
 
-    // Sort by type (Province first, then Khan) then by Name
+    // Sort by type (Khan first at the top, then Province at the bottom) then by Name
     const sortByBranch = (a: any, b: any) => {
-      if (a.branch.type !== b.branch.type) {
-        return a.branch.type === 'province' ? -1 : 1;
-      }
-      return a.branch.nameKh.localeCompare(b.branch.nameKh);
+      const aIsKhan = a.branch.type === 'khan' || a.branch.nameKh.includes('ខណ្ឌ');
+      const bIsKhan = b.branch.type === 'khan' || b.branch.nameKh.includes('ខណ្ឌ');
+      if (aIsKhan && !bIsKhan) return -1;
+      if (!aIsKhan && bIsKhan) return 1;
+      return a.branch.nameKh.localeCompare(b.branch.nameKh, 'km');
     };
 
     posted.sort(sortByBranch);

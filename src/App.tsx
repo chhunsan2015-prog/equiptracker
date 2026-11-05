@@ -524,6 +524,20 @@ export default function App() {
     }
   }, [selectedDate, selectedMonth]);
 
+  // Sort branches on the frontend (Khan branches at the top, Provincial branches at the bottom)
+  // without mutating the original branches state
+  const sortedBranches = useMemo(() => {
+    return [...branches].sort((a, b) => {
+      const aIsKhan = a.type === 'khan' || a.nameKh.includes('ខណ្ឌ');
+      const bIsKhan = b.type === 'khan' || b.nameKh.includes('ខណ្ឌ');
+
+      if (aIsKhan && !bIsKhan) return -1;
+      if (!aIsKhan && bIsKhan) return 1;
+
+      return a.nameKh.localeCompare(b.nameKh, 'km');
+    });
+  }, [branches]);
+
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans text-slate-800">
       
@@ -697,7 +711,7 @@ export default function App() {
             <div className="space-y-6">
               {/* Daily view section: Stats */}
               <DashboardStats
-                branches={branches}
+                branches={sortedBranches}
                 reports={reports}
                 staff={staff}
                 selectedDate={selectedDate}
@@ -716,7 +730,7 @@ export default function App() {
                 </p>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {branches.map(b => {
+                  {sortedBranches.map(b => {
                     const hasReportedToday = reports.some(r => r.date === selectedDate && r.branchId === b.id && r.status === 'POSTED');
                     return (
                       <button
@@ -740,7 +754,7 @@ export default function App() {
 
           {activeTab === 'matrix' && (
             <ReportGrid
-              branches={branches}
+              branches={sortedBranches}
               reports={reports}
               staff={staff}
               selectedMonth={selectedMonth}
@@ -751,7 +765,7 @@ export default function App() {
 
           {activeTab === 'staff' && (
             <StaffSettings
-              branches={branches}
+              branches={sortedBranches}
               staff={staff}
               onSaveStaff={handleSaveStaffAssignments}
               isSyncing={connectionState.isLoading}
@@ -782,7 +796,7 @@ export default function App() {
         onSubmit={handleReportSubmit}
         selectedBranchId={selectedBranchId}
         selectedDate={selectedDate}
-        branches={branches}
+        branches={sortedBranches}
         staff={staff}
         reports={reports}
       />
