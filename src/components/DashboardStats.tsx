@@ -52,8 +52,14 @@ export default function DashboardStats({
       }
     });
 
-    // Sort by type (Khan first at the top, then Province at the bottom) then by Name
+    // Sort by: 1) no-staff branches at the bottom, 2) Khan first then Province, 3) Alphabetical
+    const noStaffBranches = ['កែប', 'ក្រចេះ', 'ប៉ៃលិន', 'ពោធិ៍សាត់', 'ឧត្តរមានជ័យ'];
     const sortByBranch = (a: any, b: any) => {
+      const aIsNoStaff = noStaffBranches.some(name => a.branch.nameKh.includes(name));
+      const bIsNoStaff = noStaffBranches.some(name => b.branch.nameKh.includes(name));
+      if (aIsNoStaff && !bIsNoStaff) return 1;
+      if (!aIsNoStaff && bIsNoStaff) return -1;
+
       const aIsKhan = a.branch.type === 'khan' || a.branch.nameKh.includes('ខណ្ឌ');
       const bIsKhan = b.branch.type === 'khan' || b.branch.nameKh.includes('ខណ្ឌ');
       if (aIsKhan && !bIsKhan) return -1;

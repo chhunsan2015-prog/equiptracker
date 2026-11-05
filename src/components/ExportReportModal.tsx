@@ -52,8 +52,18 @@ export default function ExportReportModal({
     reportLookup[`${r.date}_${r.branchId}`] = r;
   });
 
-  // Sort branches so Khan branches appear at the top and Provincial branches appear at the bottom
+  // Sort branches so:
+  // 1) The 5 provincial branches without technical staff ('កែប', 'ក្រចេះ', 'ប៉ៃលិន', 'ពោធិ៍សាត់', 'ឧត្តរមានជ័យ') are at the very bottom
+  // 2) Khan branches appear at the top and Provincial branches appear below them
+  // 3) Branches within each group are sorted alphabetically in Khmer
+  const noStaffBranches = ['កែប', 'ក្រចេះ', 'ប៉ៃលិន', 'ពោធិ៍សាត់', 'ឧត្តរមានជ័យ'];
   const sortedBranches = [...branches].sort((a, b) => {
+    const aIsNoStaff = noStaffBranches.some(name => a.nameKh.includes(name));
+    const bIsNoStaff = noStaffBranches.some(name => b.nameKh.includes(name));
+
+    if (aIsNoStaff && !bIsNoStaff) return 1;
+    if (!aIsNoStaff && bIsNoStaff) return -1;
+
     const aIsKhan = a.type === 'khan' || a.nameKh.includes('ខណ្ឌ');
     const bIsKhan = b.type === 'khan' || b.nameKh.includes('ខណ្ឌ');
 

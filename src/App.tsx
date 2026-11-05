@@ -524,10 +524,20 @@ export default function App() {
     }
   }, [selectedDate, selectedMonth]);
 
-  // Sort branches on the frontend (Khan branches at the top, Provincial branches at the bottom)
-  // without mutating the original branches state
+  // Sort branches on the frontend:
+  // 1) Push 5 provincial branches without technical staff to the very bottom
+  // 2) Place Khan branches at the top and Provincial branches below them
+  // 3) Sort alphabetically in Khmer within each group
   const sortedBranches = useMemo(() => {
+    const noStaffBranches = ['កែប', 'ក្រចេះ', 'ប៉ៃលិន', 'ពោធិ៍សាត់', 'ឧត្តរមានជ័យ'];
+
     return [...branches].sort((a, b) => {
+      const aIsNoStaff = noStaffBranches.some(name => a.nameKh.includes(name));
+      const bIsNoStaff = noStaffBranches.some(name => b.nameKh.includes(name));
+
+      if (aIsNoStaff && !bIsNoStaff) return 1;
+      if (!aIsNoStaff && bIsNoStaff) return -1;
+
       const aIsKhan = a.type === 'khan' || a.nameKh.includes('ខណ្ឌ');
       const bIsKhan = b.type === 'khan' || b.nameKh.includes('ខណ្ឌ');
 
