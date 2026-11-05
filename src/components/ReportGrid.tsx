@@ -272,7 +272,7 @@ export default function ReportGrid({
 
                     {/* Staff Column (Sticky) */}
                     <td className="sticky left-[200px] bg-white text-black px-3 py-2 border-r border-slate-100 text-center shadow-[2px_0_5px_rgba(0,0,0,0.02)] z-10 overflow-hidden text-ellipsis whitespace-nowrap min-w-[160px] max-w-[170px] hover:bg-slate-50">
-                      <span className="text-[18px] leading-snug font-medium text-black bg-slate-100 px-2.5 py-1 rounded">
+                      <span className="text-[14px] leading-snug font-medium text-black bg-slate-100 px-2.5 py-1 rounded">
                         {bStaff}
                       </span>
                     </td>

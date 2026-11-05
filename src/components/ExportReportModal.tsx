@@ -360,7 +360,7 @@ export default function ExportReportModal({
 
         // Column B: Technical Staff Name
         setCell(1, rowIndex, bStaff, {
-          font: { sz: 9.5, color: { rgb: '334155' } },
+          font: { sz: 8, color: { rgb: '000000' } },
           alignment: { horizontal: 'left', vertical: 'center' },
           border: tableBorder
         });
@@ -957,13 +957,13 @@ export default function ExportReportModal({
                 color: #000000 !important;
               }
               #printable-monthly-report .print-col-staff {
-                width: 124px !important;
+                width: 148px !important;
                 padding-left: 4px !important;
                 padding-right: 4px !important;
                 color: #000000 !important;
               }
               #printable-monthly-report tbody td.print-col-staff {
-                font-size: 14.5px !important;
+                font-size: 10.5px !important;
                 font-weight: 500 !important;
                 color: #000000 !important;
               }
@@ -1169,7 +1169,7 @@ export default function ExportReportModal({
                       <td className="print-col-branch border border-slate-300 px-1 py-2 font-medium text-black whitespace-nowrap text-[14px]">
                         {b.nameKh}
                       </td>
-                      <td className="print-col-staff border border-slate-300 px-1 py-2 font-medium text-black whitespace-nowrap text-[14.5px]">
+                      <td className="print-col-staff border border-slate-300 px-1 py-2 font-medium text-black whitespace-nowrap text-[10.5px]">
                         {bStaff}
                       </td>
                       {dayCells}
